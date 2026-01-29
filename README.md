@@ -1,1 +1,1 @@
-Not yet ready, sorry.
+Not ready yet, sorry.
