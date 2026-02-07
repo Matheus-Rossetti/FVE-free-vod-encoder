@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetMetadata(input string) (int, int, int) {
+func GetMetadata(input string) (int, int, string) {
 	command := "ffprobe"
 	flags := "-v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -of csv=p=0 "
 	args := strings.Fields(flags)
@@ -26,7 +26,7 @@ func GetMetadata(input string) (int, int, int) {
 	width, _ := strconv.Atoi(metadata[0])
 	height, _ := strconv.Atoi(metadata[1])
 	splitFPS := strings.Split(metadata[2], "/")
-	fps, _ := strconv.Atoi(splitFPS[0])
+	fps := splitFPS[0]
 
 	return width, height, fps
 }
