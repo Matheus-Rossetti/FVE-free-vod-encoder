@@ -1,9 +1,9 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"os/exec"
+	"runtime"
 )
 
 func CheckForFFmpegBin() {
@@ -13,8 +13,17 @@ func CheckForFFmpegBin() {
 	if err != nil {
 		log.Printf("FFmpeg binary not found! FVE wont work without it :(")
 		log.Printf("Please install FFmpeg and ensure it's in your system's PATH.")
-		log.Fatal("Here's the download link: https://www.ffmpeg.org/download.html")
-		fmt.Scanln()
+
+		switch runtime.GOOS {
+		case "windows":
+			log.Fatal("Here's the download link: https://www.ffmpeg.org/download.html")
+		case "linux":
+			log.Println("You can install FFmpeg using your package manager")
+			log.Println("Debian/Ubuntu: sudo apt install ffmpeg")
+			log.Println("Fedora: sudo dnf install ffmpeg")
+			log.Fatal("Arch: sudo pacman -S ffmpeg")
+		}
 	}
 
+	log.Printf("FFmpeg binary found! FVE is ready to go :)")
 }
