@@ -1,15 +1,11 @@
 package main
 
 import (
-	"github.com/Matheus-Rossetti/video-converter-service/internal/app"
-	"github.com/Matheus-Rossetti/video-converter-service/internal/video"
+	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/core"
 )
 
 func main() {
-	
-	app := app.New()
 
-	newVideo := video.NewVideo(app)
-	video.Convert(newVideo, app)
+	core.CheckForFFmpegBin()
+
 }
-
