@@ -1,30 +1,25 @@
 package core
 
+import (
+	"fmt"
+	"os/exec"
+	"strings"
+)
+
 // TODO use fmt.Sprintf("") to concat strings
 
-// FULL COMMAND
-/*
-ffmpeg -i "video de teste.mp4" \
-      -filter_complex "\
-  [0:v]split=2[v1][v2]; \
-  [v1]scale=w=-2:h=720[v720_scaled]; \
-  [v720_scaled]pad=w=1280:h=720:x=-1:y=-1:color=black[v720]; \
-  [v2]scale=w=-2:h=480[v480_scaled]; \
-  [v480_scaled]pad=w=854:h=480:x=-1:y=-1:color=black[v480] \
-  " \
-      -map "[v720]" -c:v:0 libx264 -preset medium -crf 23 -sc_threshold 0 \
+func ConvertVideo(inputPath string) {
 
-      -map "[v480]" -c:v:1 libx264 -preset medium -crf 23 -sc_threshold 0 \
+	command := "ffmpeg"
+	flags := fmt.Sprintf("ffmpeg -i %v -map 0:v:0 -c:v:0 libx264 -b:v:0 4500k -maxrate:v:0 4500k -bufsize:v:0 9000k -s:v:0 1920x1080 -g 120 -keyint_min 120 -sc_threshold 0 -map 0:v:0 -c:v:1 libx264 -b:v:1 2500k -maxrate:v:1 2500k -bufsize:v:1 5000k -s:v:1 1280x720 -g 120 -keyint_min 120 -sc_threshold 0 -map 0:a:0 -c:a aac -b:a 128k -ac 2 -f hls -var_stream_map \"v:0,a:0 v:1,a:0\" -master_pl_name master.m3u8 -hls_time 4 -hls_playlist_type vod -hls_segment_filename \"stream_%%v/data%%03d.ts\" \"stream_%%v.m3u8\"", inputPath)
+	args := strings.Fields(flags)
 
-      -map a:0 \
-      -c:a:0 aac -ac 2 -ar 48000 \
-      -f hls \
-      -hls_time 3 \
-      -g 72 \
-      -hls_playlist_type vod \
-      -hls_list_size 0 \
-      -hls_segment_filename "processed-video/%v/segment_%03d.ts" \
-      -hls_flags independent_segments \
-      -master_pl_name master.m3u8 \
-      -var_stream_map "v:0,name:720p,agroup:main_audio v:1,name:480p,agroup:main_audio a:0,name:audio,agroup:main_audio,default:yes" processed-video/%v/playlist.m3u8
-*/
+	cmd := exec.Command(command, args...)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error executing command: %v\n", err)
+	}
+
+	fmt.Printf("Command output: %s\n", string(output))
+}

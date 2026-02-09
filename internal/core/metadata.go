@@ -8,6 +8,9 @@ import (
 )
 
 func GetMetadata(input string) (int, int, string) {
+
+	// ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream -of json
+
 	command := "ffprobe"
 	flags := "-v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -of csv=p=0 "
 	args := strings.Fields(flags)

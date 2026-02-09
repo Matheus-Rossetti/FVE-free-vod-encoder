@@ -17,4 +17,11 @@
 - Make a UI that consumes the REST API, native and web, with flutter.
 
 
+initially I wanted to call it FEVOD (Free Encoder for Video on Demand) but the 'FE'
+sounded too much like 'Fee', and I didin't want it to be anywhere close to a paid product
+so I changed it to FREVOD.
+
+
+
+
 FFmpeg the way Redis is to caching or RabbitMQ is to messaging
