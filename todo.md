@@ -6,6 +6,7 @@
 - Make FVE read a json, xml or watever file to get configs
 - Add unit testing for the core package 
 - Add metrics with prometheus
+- Add optional metrics for my own server, to store how many videos were processed with it and things alike
 - Make it be able to listen to a rabbitmq or kafka queue
 - Add a REST API
 - Add a GraphQL API

@@ -1,35 +1,21 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
-	"strconv"
-	"strings"
 )
 
-func GetMetadata(input string) (int, int, string) {
+func GetMetadataFrom(videoPath string) string {
 
-	// ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream -of json
+	input := fmt.Sprintf("-i %v", videoPath)
 
-	command := "ffprobe"
-	flags := "-v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -of csv=p=0 "
-	args := strings.Fields(flags)
-	args = append(args, input)
-
-	cmd := exec.Command(command, args...)
-
+	// flags here could be an array, but there are few enougth, so no need
+	cmd := exec.Command("ffprobe", input, "-of json", "-loglevel error", "-show_streams")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Erro: %v\n Command: %v %v\n PATH: %v\n", err, command, args, input)
-		log.Fatal("A problem occurred when fetching the input's metadata")
+		log.Fatal("Coudn't run ffprobe's command", err)
 	}
 
-	metadata := strings.Split(string(output), ",")
-
-	width, _ := strconv.Atoi(metadata[0])
-	height, _ := strconv.Atoi(metadata[1])
-	splitFPS := strings.Split(metadata[2], "/")
-	fps := splitFPS[0]
-
-	return width, height, fps
+	return string(output)
 }
