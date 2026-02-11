@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/core"
 )
@@ -13,16 +16,32 @@ func main() {
 
 	// videoPath := cli.GetVideoPath()
 
-	// // video := core.NewVideo(videoPath)
+	// video := core.NewVideo(videoPath)
 
 	// fmt.Printf("Video metadata: %+v\n", video)
 
-	cmd := core.BuildFFmpegCommand()
+	fmt.Printf("FREVOD is up and running! Write the path of the video below and it will be encoded!\n")
+	for {
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatal("error running the command\n", err, string(output))
+		var videoPath string
+
+		fmt.Scanln(&videoPath)
+
+		fmt.Printf("Initiating encoding process for %v\n", videoPath)
+
+		go func(path string) {
+			base := filepath.Base(path)
+			name := strings.TrimSuffix(base, filepath.Ext(base))
+			outputDir := filepath.Join("HLS", name)
+			os.MkdirAll(outputDir, 0755)
+
+			cmd := core.BuildFFmpegCommand(path, outputDir)
+			_, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Printf("error running the command\n%v \nfor: %v\n", err, videoPath)
+			}
+
+			fmt.Printf("%v encoded succesfully!\n", videoPath)
+		}(videoPath)
 	}
-
-	fmt.Print(string(output))
 }
