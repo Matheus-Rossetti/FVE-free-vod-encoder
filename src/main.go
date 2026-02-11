@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/cli"
 	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/core"
 )
@@ -11,9 +13,7 @@ func main() {
 
 	videoPath := cli.GetVideoPath()
 
-	// width, height, fps := core.GetMetadata(videoPath)
+	video := core.NewVideo(videoPath)
 
-	// fmt.Printf("Width: %v, Height: %v, FPS: %v\n", width, height, fps)
-
-	core.ConvertVideo(videoPath)
+	fmt.Printf("Video metadata: %+v\n", video)
 }
