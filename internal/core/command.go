@@ -26,6 +26,7 @@ func BuildFFmpegCommand(input, outputDir string) *exec.Cmd {
 		"-f", "hls", // video format, in our case, either HLS or DASH
 		"-hls_time", "2", // duration of each .ts segment
 		"-hls_flags", "independent_segments", // throws and error if a segment doesn't start with an iframe
+		"-hls_segment_type", "fmp4", // .mp4 segments instead of .ts
 		"-hls_playlist_type", "vod", // self explanatory
 		"-hls_list_size", "0", // std value is 5, used for livestreams, we want all segments in the list so we input 0
 		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
@@ -63,7 +64,7 @@ HLS
 -f hls playlist.m3u8
 -hls_time 2
 -hls_flags independent_segments
+-hls_segment_type fmp4
 -hls_playlist_type vod
 -hls_list_size 0
-
 */
