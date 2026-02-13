@@ -36,9 +36,9 @@ func main() {
 			os.MkdirAll(outputDir, 0755)
 
 			cmd := core.BuildFFmpegCommand(path, outputDir)
-			_, err := cmd.CombinedOutput()
+			output, err := cmd.CombinedOutput()
 			if err != nil {
-				log.Printf("error running the command\n%v \nfor: %v\n", err, videoPath)
+				log.Printf("error running the command\n%v \nfor: %v\n", err, string(output))
 			}
 
 			fmt.Printf("%v encoded succesfully!\n", videoPath)
