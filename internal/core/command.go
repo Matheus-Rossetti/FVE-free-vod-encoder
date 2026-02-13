@@ -28,8 +28,8 @@ func BuildFFmpegCommand(input, outputDir string) *exec.Cmd {
 		"-hls_flags", "independent_segments", // throws and error if a segment doesn't start with an iframe
 		"-hls_playlist_type", "vod", // self explanatory
 		"-hls_list_size", "0", // std value is 5, used for livestreams, we want all segments in the list so we input 0
-		"-hls_segment_filename", segmentPattern, // name and dir of the hls segments
-		playlistPath, // name and fir of the hls playlist
+		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
+		playlistPath, // name and fir for hls playlist
 	}
 
 	return exec.Command("ffmpeg", args...)

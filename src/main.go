@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/core"
+	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/io/cli"
 )
 
 func main() {
@@ -20,9 +21,8 @@ func main() {
 
 	// fmt.Printf("Video metadata: %+v\n", video)
 
-	fmt.Printf("FREVOD is up and running! Write the path of the video below and it will be encoded!\n")
+	cli.Greet()
 	for {
-
 		var videoPath string
 
 		fmt.Scanln(&videoPath)
