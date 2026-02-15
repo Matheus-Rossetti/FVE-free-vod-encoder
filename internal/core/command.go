@@ -3,19 +3,17 @@ package core
 import (
 	"fmt"
 	"os/exec"
-	"strings"
 )
 
-func BuildFFmpegCommand(input, outputDir string) *exec.Cmd {
+// TODO using videoName for now, change to UUID later in case two video with the same name are encoded at once
+func BuildFFmpegCommand(input, videoName string) *exec.Cmd {
 
-	// change this to path.Join so golang automatically deals with os difference when creating directories.
-	segmentPattern := fmt.Sprintf("%v/stream_%%v/segment_%%03d.ts", outputDir)
-	playlistPath := fmt.Sprintf("%v/stream_%%v/playlist.m3u8", outputDir)
+	segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.ts")
+	playlistPath := fmt.Sprintf("playlist_%%v.m3u8")
 
 	args := []string{
 		"-i", input, // input
 
-		// Filte's working, but VLC can't read the playlist anymore, research and fix.
 		"-filter_complex",
 		"[0:v]split=3[v1][v2][v3];[v1]scale=-2:1080[v1out];[v2]scale=-2:720[v2out];[v3]scale=-2:480[v3out]",
 
@@ -61,10 +59,11 @@ func BuildFFmpegCommand(input, outputDir string) *exec.Cmd {
 		"-var_stream_map", "v:0 v:1 v:2",
 		"-strftime_mkdir", "1",
 		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
-		playlistPath, // name and fir for hls playlist
+		playlistPath, // name and dir for hls playlist
 	}
 
-	fmt.Println(strings.Join(args, " "))
+	// TODO make it an option to output the ffmpeg command
+	// fmt.Println("\n", strings.Join(args, " "))
 
 	return exec.Command("ffmpeg", args...)
 }

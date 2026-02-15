@@ -31,14 +31,20 @@ func main() {
 
 		go func(path string) {
 			base := filepath.Base(path)
-			name := strings.TrimSuffix(base, filepath.Ext(base))
-			outputDir := filepath.Join("HLS", name)
+			videoName := strings.TrimSuffix(base, filepath.Ext(base))
+			outputDir := filepath.Join("output", videoName)
 			os.MkdirAll(outputDir, 0755)
 
-			cmd := core.BuildFFmpegCommand(path, outputDir)
+			absoluteVideoPath, err := filepath.Abs(path)
+			if err != nil {
+				log.Fatal("Error getting the absolute file path for video\n", err)
+			}
+
+			cmd := core.BuildFFmpegCommand(absoluteVideoPath, videoName)
+			cmd.Dir = outputDir
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				log.Printf("error running the command\n%v \nfor: %v\n", err, string(output))
+				log.Fatal("error running the command\n", err, "for:", string(output))
 			}
 
 			fmt.Printf("%v encoded succesfully!\n", videoPath)
