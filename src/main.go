@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/core"
-	"github.com/Matheus-Rossetti/FVE-free-vod-encoder/internal/io/cli"
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func main() {
@@ -21,7 +20,7 @@ func main() {
 
 	// fmt.Printf("Video metadata: %+v\n", video)
 
-	cli.Greet()
+	core.Greet()
 	for {
 		var videoPath string
 

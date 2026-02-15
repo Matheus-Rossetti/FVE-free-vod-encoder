@@ -8,8 +8,9 @@ import (
 // TODO using videoName for now, change to UUID later in case two video with the same name are encoded at once
 func BuildFFmpegCommand(input, videoName string) *exec.Cmd {
 
-	segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.ts")
+	segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.m4s")
 	playlistPath := fmt.Sprintf("playlist_%%v.m3u8")
+	fmp4InitFilename := fmt.Sprintf("stream_%%v/init.mp4")
 
 	args := []string{
 		"-i", input, // input
@@ -51,7 +52,8 @@ func BuildFFmpegCommand(input, videoName string) *exec.Cmd {
 		"-f", "hls", // video format, in our case, either HLS or DASH
 		"-hls_time", "2", // duration of each .ts segment
 		"-hls_flags", "independent_segments", // throws and error if a segment doesn't start with an iframe
-		// "-hls_segment_type", "fmp4", // .mp4 segments instead of .ts
+		"-hls_segment_type", "fmp4", // .mp4 segments instead of .ts
+		"-hls_fmp4_init_filename", fmp4InitFilename,
 		"-hls_playlist_type", "vod", // self explanatory
 		"-hls_list_size", "0", // std value is 5, used for livestreams, we want all segments in the list so we input 0
 		"-master_pl_name", "master.m3u8",

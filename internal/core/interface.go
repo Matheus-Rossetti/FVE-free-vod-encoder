@@ -1,4 +1,4 @@
-package io
+package core
 
 type Input interface {
 	IngestVideo()
