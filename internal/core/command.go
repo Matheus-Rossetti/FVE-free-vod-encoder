@@ -15,6 +15,7 @@ func BuildFFmpegCommand(input, outputDir string) *exec.Cmd {
 	args := []string{
 		"-i", input, // input
 
+		// Filte's working, but VLC can't read the playlist anymore, research and fix.
 		"-filter_complex",
 		"[0:v]split=3[v1][v2][v3];[v1]scale=-2:1080[v1out];[v2]scale=-2:720[v2out];[v3]scale=-2:480[v3out]",
 
