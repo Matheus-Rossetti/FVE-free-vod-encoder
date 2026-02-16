@@ -6,14 +6,14 @@ import (
 )
 
 // TODO using videoName for now, change to UUID later in case two video with the same name are encoded at once
-func BuildFFmpegCommand(input, videoName string) *exec.Cmd {
+func BuildFFmpegCommand(videoPath, videoName string) *exec.Cmd {
 
 	segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.m4s")
 	playlistPath := fmt.Sprintf("playlist_%%v.m3u8")
 	fmp4InitFilename := fmt.Sprintf("stream_%%v/init.mp4")
 
 	args := []string{
-		"-i", input, // input
+		"-i", videoPath, // input
 
 		"-filter_complex",
 		"[0:v]split=3[v1][v2][v3];[v1]scale=-2:1080[v1out];[v2]scale=-2:720[v2out];[v3]scale=-2:480[v3out]",
@@ -69,36 +69,3 @@ func BuildFFmpegCommand(input, videoName string) *exec.Cmd {
 
 	return exec.Command("ffmpeg", args...)
 }
-
-/*
-
-ffmpeg
--i .\video-test\trailer.mp4
-
-V ENCODING
--c:v libx264
--b:v 4000k // fullhd
--maxrate 4800k
--bufsize 9000k
--preset slow
-
-COPATIBILITY
--pix_fmt yuv420p
-
-KEY FRAMES FOR VOD
--force_key_frames "expr:gte(t, n_forced*2)"
--sc_threshold 0
--g 9999
-
-A ENCONDING
--c:a aac
--b:a 128k
-
-HLS
--f hls playlist.m3u8
--hls_time 2
--hls_flags independent_segments
--hls_segment_type fmp4
--hls_playlist_type vod
--hls_list_size 0
-*/

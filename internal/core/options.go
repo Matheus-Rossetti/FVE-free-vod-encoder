@@ -1,21 +1,24 @@
 package core
 
 type Options struct {
+	Encoding    string
+	SegmentType string
+
+	UseTerminal bool
+	UseREST     bool
+	UseRabbitMQ bool
+
+	StoreLocal bool
+	StoreS3    bool
+	Upload     bool
+
+	ExposeMetrics       bool
+	ConcurrentEncodings int
 }
 
-/*
-OPTIONS TO OFFER:
-	Encoding and containerization:
-	- H.264 or H.265
-	- .ts or .m4s output
-
-	Inputs:
-	- Terminal with path or download link
-	- Accept HTTP requests with download link
-	- Listen to a RabbitMQ queue
-
-	Outputs:
-	- Local | specify path
-	- An storage service compatible with S3 API
-	- Maybe any storage, as long as the user informs the upload URL
-*/
+// TODO set standard values and substitute them for the ones in config.yml
+func ParseOptions() *Options {
+	return &Options{
+		UseTerminal: true,
+	}
+}

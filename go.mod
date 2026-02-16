@@ -1,3 +1,3 @@
-module github.com/Matheus-Rossetti/FVE-free-vod-encoder
+module github.com/Matheus-Rossetti/frevod
 
 go 1.24.6
