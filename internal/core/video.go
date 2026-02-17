@@ -1,50 +1,44 @@
 package core
 
 import (
-	"encoding/json"
-	"log"
+	"path/filepath"
+	"strings"
 )
 
-type Stream struct {
-	CodecType   string `json:"codec_type"`
-	Height      int    `json:"height"`
-	Width       int    `json:"width"`
-	AspectRatio string `json:"display_aspect_ratio"`
-	Duration    string `json:"duration"`
-}
-
-type Streams struct {
-	Index []Stream `json:"streams"`
-}
-
 type Video struct {
+
+	// Source is the absolute path of where the source file (the video) is located.
+	Source string
+	Name   string
+
 	Height      int
 	Width       int
 	AspectRatio string
-	Duration    string //seconds
+	Duration    string // Seconds
 	HasAudio    bool   // Useful when building the ffmpeg command | doesn't include audio tags if hasAudio == false
 }
 
 func NewVideo(videoPath string) *Video {
 
-	var streams Streams
-	jsonMetadata := GetMetadataFrom(videoPath)
+	metadata := GetMetadataFrom(videoPath)
 
-	// map metadata to video struct
-	err := json.Unmarshal([]byte(jsonMetadata), &streams)
-	if err != nil {
-		log.Fatal("Couldn't map ffprobe output to video struct.", err)
-	}
+	videoFileName := filepath.Base(videoPath)
+	videoName := strings.TrimSuffix(videoFileName, filepath.Ext(videoFileName))
 
 	video := Video{
-		Height:      streams.Index[0].Height,
-		Width:       streams.Index[0].Width,
-		Duration:    streams.Index[0].Duration,
-		AspectRatio: streams.Index[0].AspectRatio,
+		Name:        videoName,
+		Source:      videoPath,
+		Height:      metadata.Streams[0].Height,
+		Width:       metadata.Streams[0].Width,
+		AspectRatio: metadata.Streams[0].AspectRatio,
+		Duration:    metadata.Streams[0].Duration,
 	}
 
+	// TODO fail if a file has more than 1 video stream | multiple video streams not supported yet
+	// TODO maybe encode the first video stream and return a warning about file having more than 1 v-stream
+
 	// check if there's at least one audio stream
-	for _, stream := range streams.Index {
+	for _, stream := range metadata.Streams {
 		if stream.CodecType == "audio" {
 			video.HasAudio = true
 			break

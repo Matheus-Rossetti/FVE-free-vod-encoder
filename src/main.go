@@ -22,10 +22,11 @@ func main() {
 
 	for job := range jobQueue {
 		go func() {
-			outputDir := core.CreateOutputDir(job.Id)
-			command := core.BuildFFmpegCommand(job.VideoPath, "video1")
+			video := core.NewVideo(job.AbsoluteVideoPath)
+			outputDir := core.CreateOutputDir(video)
+			command := core.BuildFFmpegCommand(video)
 			core.RunFFmpeg(command, outputDir)
-			fmt.Printf("Job %v concluded! ", job.Id)
+			fmt.Printf("Job %v concluded!\n", video.Name)
 		}()
 	}
 }

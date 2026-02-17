@@ -11,7 +11,7 @@ func CheckForFFmpegBin() {
 	_, err := cmd.CombinedOutput()
 
 	if err != nil {
-		log.Printf("FFmpeg binary not found! FVE wont work without it :(")
+		log.Printf("FFmpeg binary not found! Frevod wont work without it :(")
 		log.Printf("Please install FFmpeg and ensure it's in your system's PATH.")
 
 		switch runtime.GOOS {
@@ -25,5 +25,5 @@ func CheckForFFmpegBin() {
 		}
 	}
 
-	log.Printf("FFmpeg binary found! FVE is ready to go :)")
+	log.Printf("FFmpeg binary found! Frevod is ready to go :)")
 }

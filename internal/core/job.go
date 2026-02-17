@@ -1,9 +1,7 @@
 package core
 
 type VideoJob struct {
-	Source    string
-	VideoPath string
-	Id        string
-
-	videoName string
+	// cli | rabbitmq | REST API | etc...
+	Source            string
+	AbsoluteVideoPath string
 }

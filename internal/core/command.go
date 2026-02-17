@@ -5,15 +5,14 @@ import (
 	"os/exec"
 )
 
-// TODO using videoName for now, change to UUID later in case two video with the same name are encoded at once
-func BuildFFmpegCommand(videoPath, videoName string) *exec.Cmd {
+func BuildFFmpegCommand(video *Video) *exec.Cmd {
 
 	segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.m4s")
 	playlistPath := fmt.Sprintf("playlist_%%v.m3u8")
 	fmp4InitFilename := fmt.Sprintf("stream_%%v/init.mp4")
 
 	args := []string{
-		"-i", videoPath, // input
+		"-i", video.Source, // input
 
 		"-filter_complex",
 		"[0:v]split=3[v1][v2][v3];[v1]scale=-2:1080[v1out];[v2]scale=-2:720[v2out];[v3]scale=-2:480[v3out]",

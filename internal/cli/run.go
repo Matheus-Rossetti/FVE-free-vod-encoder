@@ -14,6 +14,7 @@ func Run(jobQueue chan<- core.VideoJob) {
 
 	var videoPath string
 	for {
+		fmt.Print("\n>> ")
 		_, err := fmt.Scanln(&videoPath)
 		if err != nil {
 			log.Fatal("Error getting input from the terminal", err)
@@ -23,17 +24,14 @@ func Run(jobQueue chan<- core.VideoJob) {
 		// if it's url
 		// TODO download
 
-		id := "1"
-
 		absoluteVideoPath, err := filepath.Abs(videoPath)
 		if err != nil {
 			log.Fatal("Couldn't get absolute path for video: ", videoPath, "\nError: ", err)
 		}
 
 		jobQueue <- core.VideoJob{
-			Source:    "Terminal",
-			VideoPath: absoluteVideoPath, // absolute path is safer than relative path
-			Id:        id,
+			Source:            "Terminal",
+			AbsoluteVideoPath: absoluteVideoPath, // absolute path is safer than relative path
 		}
 	}
 }
