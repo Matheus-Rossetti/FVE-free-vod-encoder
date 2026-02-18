@@ -139,7 +139,7 @@ func buildAudioMaps(video *Video) []string {
 
 		audioMaps = append(audioMaps,
 			mapFlag, "a:0",
-			codecFlag, "AAC",
+			codecFlag, "aac",
 			bitrateFlag, bitrate,
 		)
 	}
@@ -171,7 +171,7 @@ func BuildHlsOptions(video *Video) []string {
 	var streamMap strings.Builder
 	for index := range versionAmount {
 		if video.HasAudio {
-			fmt.Fprintf(&streamMap, "v:%v,a:%v ", index)
+			fmt.Fprintf(&streamMap, "v:%v,a:%v ", index, index)
 		} else {
 			fmt.Fprintf(&streamMap, "v:%v ", index)
 		}
