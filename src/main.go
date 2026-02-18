@@ -23,9 +23,9 @@ func main() {
 	for job := range jobQueue {
 		go func() {
 			video := core.NewVideo(job.AbsoluteVideoPath)
-			core.CreateOutputDir(video.Name)
-			core.BuildFFmpegCommand(video, options)
-			// core.RunFFmpeg(command, outputDir)
+			outputDir := core.CreateOutputDir(video.Name)
+			command := core.BuildFFmpegCommand(video, options)
+			core.RunFFmpeg(command, outputDir)
 			fmt.Printf("Job %v concluded!\n", video.Name)
 		}()
 	}

@@ -9,22 +9,32 @@ import (
 
 // THERE'S AN EXAMPLE OF THE GENERATED COMMAND AT THE END OF THIS FILE
 
+// This is quite a complex file, it operates multiple string concatenations
+// Each part of the command is built in a different function
+// We iterate through the same array in each function, that's on purpose
+// Sacrifice a litte bit of performance for maintainability
+
 func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	// I tried my best not to make this ugly, okay? I'm Sorry
-
-	// segmentPattern := fmt.Sprintf("stream_%%v/segment_%%03d.m4s")
-	// playlistPath := fmt.Sprintf("playlist_%%v.m3u8")
-	// fmp4InitFilename := fmt.Sprintf("stream_%%v/init.mp4")
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
 	input := []string{"-i", video.Source}
 	filterComplex := buildFilterComplex(video)
-	maps := buildMaps(video)
+	videoMaps := buildVideoMaps(video) // h.264
+	var audioMaps []string
+	if video.HasAudio {
+		audioMaps = buildAudioMaps(video) // aac | maybe switch to opus, which sounds better at the same bitrate, handle 5.1 sound
+	}
+	keyFramesAndQuality := getKeyFramesAndQuality()
+	hlsOptions := BuildHlsOptions(video)
 
 	args := slices.Concat(
 		input,
 		filterComplex,
-		maps,
+		videoMaps,
+		audioMaps, // this can be nil, but .Concat handles it
+		keyFramesAndQuality,
+		hlsOptions,
 	)
 
 	// TODO make it an option to output the ffmpeg command
@@ -67,7 +77,7 @@ func buildFilterComplex(video *Video) []string {
 	return filterComplex
 }
 
-func buildMaps(video *Video) []string {
+func buildVideoMaps(video *Video) []string {
 
 	// TODO adapt to .env or config.yml in case
 	// user wants custom bitrates
@@ -75,7 +85,7 @@ func buildMaps(video *Video) []string {
 	// --- MAP OF BITRATE VALUES ---
 	rates := map[int]struct {
 		avg, max, buf string
-	}{
+	}{ // This is for 30 fps, if the video has 60fps we gotta double this values
 		2160: {"25000k", "35000k", "50000k"},
 		1440: {"12000k", "16000k", "24000k"},
 		1080: {"6000k", "8000k", "12000k"},
@@ -106,6 +116,81 @@ func buildMaps(video *Video) []string {
 	}
 
 	return maps
+}
+
+func buildAudioMaps(video *Video) []string {
+
+	// --- MAP OF BITRATE VALUES ---
+	rates := map[int]string{
+		2160: "320k",
+		1440: "320k",
+		1080: "192k",
+		720:  "192k",
+		480:  "128k",
+	}
+
+	mapFlag := "-map"
+	var audioMaps []string
+	for index := range video.RenditionsToMake {
+
+		codecFlag := fmt.Sprintf("-c:a:%v", index)
+		bitrateFlag := fmt.Sprintf("-b:a:%v", index)
+		bitrate := rates[video.ReferenceResolution]
+
+		audioMaps = append(audioMaps,
+			mapFlag, "a:0",
+			codecFlag, "AAC",
+			bitrateFlag, bitrate,
+		)
+	}
+	// "-map", "a:0", "-c:a:0", "AAC", "-b:a:0", "192k",
+	// "-map", "a:0", "-c:a:1", "AAC", "-b:a:1", "129k",
+	// "-map", "a:0", "-c:a:2", "AAC", "-b:a:2", "96k",
+
+	return audioMaps
+}
+
+func getKeyFramesAndQuality() []string {
+	return []string{
+		"-preset", "slow", // encodes slower but with better quality and compression
+		"-pix_fmt", "yuv420p", // sets yuv420p, which is widely adopted
+		"-force_key_frames", "expr:gte(t, n_forced*1)", // force a keyframe every seconds
+		"-sc_threshold", "0", // stops H.264 from automatically adding iframes at scene changes
+		"-g", "9999", // max frames between iframes, std value is 250, this option is just for safety
+	}
+}
+
+func BuildHlsOptions(video *Video) []string {
+
+	segmentPattern := "stream_%v/segment_%03d.m4s"
+	playlistPath := "playlist_%v.m3u8"
+	fmp4InitFilename := "stream_%v/init.mp4"
+
+	versionAmount := len(video.RenditionsToMake)
+
+	var streamMap strings.Builder
+	for index := range versionAmount {
+		if video.HasAudio {
+			fmt.Fprintf(&streamMap, "v:%v,a:%v ", index)
+		} else {
+			fmt.Fprintf(&streamMap, "v:%v ", index)
+		}
+	}
+
+	return []string{
+		"-f", "hls", // video format, in our case, either HLS or DASH
+		"-hls_time", "2", // duration of each .ts segment
+		"-hls_flags", "independent_segments", // throws and error if a segment doesn't start with an iframe
+		"-hls_segment_type", "fmp4", // .mp4 segments instead of .ts
+		"-hls_fmp4_init_filename", fmp4InitFilename,
+		"-hls_playlist_type", "vod", // self explanatory
+		"-hls_list_size", "0", // std value is 5, we want all segments in the list so we input 0 | weird, I know
+		"-master_pl_name", "master.m3u8",
+		"-var_stream_map", streamMap.String(),
+		"-strftime_mkdir", "1",
+		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
+		playlistPath, // name and dir for hls playlist
+	}
 }
 
 /* args := []string{
@@ -141,9 +226,6 @@ func buildMaps(video *Video) []string {
 	"-force_key_frames", "expr:gte(t, n_forced*1)", // force a keyframe every seconds
 	"-sc_threshold", "0", // stops H.264 adding iframes at scene changes, we're forcing an iframe each 2 seconds
 	"-g", "9999", // max frames between iframes, std value is 250, this option is just for safety
-
-	// "-c:a", "aac", // audio codec
-	// "-b:a", "128k", // audio bitrate
 
 	"-f", "hls", // video format, in our case, either HLS or DASH
 	"-hls_time", "2", // duration of each .ts segment
