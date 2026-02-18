@@ -19,11 +19,12 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
 	input := []string{"-i", video.Source}
 	filterComplex := buildFilterComplex(video)
-	// maps := buildMaps(video)
+	maps := buildMaps(video)
 
 	args := slices.Concat(
 		input,
 		filterComplex,
+		maps,
 	)
 
 	// TODO make it an option to output the ffmpeg command
@@ -40,9 +41,9 @@ func buildFilterComplex(video *Video) []string {
 	// Example output:
 	// [0:v]split=3[v1][v2]
 	var splitSection strings.Builder
-	splitSection.WriteString(fmt.Sprintf("[0:v]split=%v", splitAmount))
-	for index, _ := range video.RenditionsToMake {
-		splitSection.WriteString(fmt.Sprintf("[v%v]", (index + 1)))
+	fmt.Fprintf(&splitSection, "[0:v]split=%v", splitAmount)
+	for index := range video.RenditionsToMake {
+		fmt.Fprintf(&splitSection, "[v%v]", (index + 1))
 	}
 
 	// Example output:
@@ -53,12 +54,10 @@ func buildFilterComplex(video *Video) []string {
 			scale = fmt.Sprintf("%v:-2", res.name)
 		}
 
-		splitSection.WriteString(fmt.Sprintf(
-			";[v%v]scale=%v[v%vout]",
+		fmt.Fprintf(&splitSection, ";[v%v]scale=%v[v%vout]",
 			(index + 1),
 			scale,
-			(index + 1),
-		))
+			(index + 1))
 	}
 
 	// Final string should be something like:
@@ -66,6 +65,47 @@ func buildFilterComplex(video *Video) []string {
 
 	filterComplex := []string{flag, splitSection.String()}
 	return filterComplex
+}
+
+func buildMaps(video *Video) []string {
+
+	// TODO adapt to .env or config.yml in case
+	// user wants custom bitrates
+
+	// --- MAP OF BITRATE VALUES ---
+	rates := map[int]struct {
+		avg, max, buf string
+	}{
+		2160: {"25000k", "35000k", "50000k"},
+		1440: {"12000k", "16000k", "24000k"},
+		1080: {"6000k", "8000k", "12000k"},
+		720:  {"3500k", "5000k", "7000k"},
+		480:  {"1500k", "2000k", "3000k"},
+	}
+
+	mapFlag := "-map"
+	var maps []string
+	for index := range video.RenditionsToMake {
+
+		// --- INDEX THE FLAGS AND RETREIVE VALUES FOR REFERENCE RESOLUTION ---
+		version := fmt.Sprintf("[v%vout]", (index + 1))
+		codecFlag := fmt.Sprintf("-c:v:%v", index)
+		bitrateFlag := fmt.Sprintf("-b:v:%v", index)
+		maxrateFlag := fmt.Sprintf("-maxrate:v:%v", index)
+		bufsizeFlag := fmt.Sprintf("-bufsize:v:%v", index)
+		bitrate := rates[video.ReferenceResolution]
+
+		// --- TURN IT ALL INTO A SLICE ---
+		maps = append(maps,
+			mapFlag, version,
+			codecFlag, "libx264",
+			bitrateFlag, bitrate.avg,
+			maxrateFlag, bitrate.max,
+			bufsizeFlag, bitrate.buf,
+		)
+	}
+
+	return maps
 }
 
 /* args := []string{
