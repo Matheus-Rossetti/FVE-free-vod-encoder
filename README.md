@@ -21,3 +21,7 @@ It has built in monitoring and metrics with Prometheus.
 
 This allows Frevod to fit in any architecture or pipeline.
 Praise FFmpeg!
+
+initially I wanted to call it FEVOD (Free Encoder for Video on Demand) but the 'FE'
+sounded too much like 'Fee', and I didin't want it to be anywhere close to a paid product
+so I changed it to FREVOD.

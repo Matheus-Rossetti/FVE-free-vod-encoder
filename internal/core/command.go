@@ -13,9 +13,9 @@ import (
 // Each part of the command is built in a different function
 // We iterate through the same array in each function, that's on purpose
 // Sacrifice a litte bit of performance for maintainability
+// I tried my best not to make this ugly, okay? I'm Sorry
 
 func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
-	// I tried my best not to make this ugly, okay? I'm Sorry
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
 	input := []string{"-i", video.Source}
@@ -23,7 +23,7 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	videoMaps := buildVideoMaps(video) // h.264
 	var audioMaps []string
 	if video.HasAudio {
-		audioMaps = buildAudioMaps(video) // aac | maybe switch to opus, which sounds better at the same bitrate, handle 5.1 sound
+		audioMaps = buildAudioMaps(video) // aac | maybe switch to opus, heard sounds better at the same bitrate and handle 5.1 sound
 	}
 	keyFramesAndQuality := getKeyFramesAndQuality()
 	hlsOptions := BuildHlsOptions(video)
@@ -32,13 +32,15 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 		input,
 		filterComplex,
 		videoMaps,
-		audioMaps, // this can be nil, but .Concat handles it
+		audioMaps, // this can be nil, but slices.Concat handles it
 		keyFramesAndQuality,
 		hlsOptions,
 	)
 
-	// TODO make it an option to output the ffmpeg command
-	fmt.Println("\n", strings.Join(args, " "))
+	if options.OutputFFmpegCommand {
+		// TODO some values need to me inclosed in double quotes "example"
+		fmt.Println("\n", strings.Join(args, " "))
+	}
 
 	return exec.Command("ffmpeg", args...)
 }
@@ -109,6 +111,7 @@ func buildVideoMaps(video *Video) []string {
 		maps = append(maps,
 			mapFlag, version,
 			codecFlag, "libx264",
+			"-threads", "2",
 			bitrateFlag, bitrate.avg,
 			maxrateFlag, bitrate.max,
 			bufsizeFlag, bitrate.buf,
