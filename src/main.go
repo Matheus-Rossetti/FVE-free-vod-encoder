@@ -26,7 +26,7 @@ func main() {
 			start := time.Now()
 
 			video := core.NewVideo(job.AbsoluteVideoPath)
-			outputDir := core.CreateOutputDir(video.Name)
+			outputDir := core.CreateOutputDir(video.Name, options)
 			command := core.BuildFFmpegCommand(video, options)
 			// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
 			core.RunFFmpeg(command, outputDir)

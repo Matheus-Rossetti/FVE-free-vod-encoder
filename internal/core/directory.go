@@ -6,15 +6,17 @@ import (
 	"os"
 )
 
-func CreateOutputDir(videoName string) string {
+func CreateOutputDir(videoName string, options *Options) string {
+
+	outputDir := options.OutputEncodedVideoTo
 
 	// Make basic output dir
-	os.Mkdir("output", 0700)
+	os.Mkdir(outputDir, 0700)
 
 	// concatenate video.nome with "-*", the -> * <- is where MkdirTemp adds a random string
 	dirPattern := fmt.Sprintf("%v-*", videoName)
 
-	// create the dir inside output/ The return value here is "output/{video.Name}-{random-string}"
+	// create the dir inside {outputDir}/ The return value here is "{outputDir}/{video.Name}-{random-string}"
 	dirName, err := os.MkdirTemp("output", dirPattern)
 	if err != nil {
 		log.Fatal("Error creating output directory: ", err)
