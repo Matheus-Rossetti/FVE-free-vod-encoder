@@ -24,10 +24,13 @@ func main() {
 	for job := range jobQueue {
 		go func() {
 			start := time.Now()
+
 			video := core.NewVideo(job.AbsoluteVideoPath)
 			outputDir := core.CreateOutputDir(video.Name)
 			command := core.BuildFFmpegCommand(video, options)
+			// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
 			core.RunFFmpeg(command, outputDir)
+
 			fmt.Printf("Job %v concluded!\n", video.Name)
 			fmt.Printf("\n\n Encoding took %v", time.Since(start))
 		}()

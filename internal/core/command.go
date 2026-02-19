@@ -3,11 +3,11 @@ package core
 import (
 	"fmt"
 	"os/exec"
+	"runtime"
 	"slices"
 	"strings"
+	"syscall"
 )
-
-// THERE'S AN EXAMPLE OF THE GENERATED COMMAND AT THE END OF THIS FILE
 
 // This is quite a complex file, it operates multiple string concatenations
 // Each part of the command is built in a different function
@@ -15,6 +15,7 @@ import (
 // Sacrifice a litte bit of performance for maintainability
 // I tried my best not to make this ugly, okay? I'm Sorry
 
+// THERE'S AN EXAMPLE OF THE OUTPUT OF THIS FUNCTION AT THE END OF THIS FILE
 func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
@@ -23,9 +24,9 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	videoMaps := buildVideoMaps(video) // h.264
 	audioMaps := buildAudioMaps(video) // aac | maybe switch to opus, heard sounds better at the same bitrate and handle 5.1 sound
 	keyFramesAndQuality := getKeyFramesAndQuality()
-	hlsOptions := BuildHlsOptions(video)
+	hlsOptions := buildHlsOptions(video)
 
-	args := slices.Concat(
+	ffmpegArgs := slices.Concat(
 		input,
 		filterComplex,
 		videoMaps,
@@ -36,10 +37,13 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 
 	if options.OutputFFmpegCommand {
 		// TODO some values need to be inclosed in double quotes "example"
-		fmt.Println("\n", strings.Join(args, " "))
+		fmt.Println("\n", strings.Join(ffmpegArgs, " "))
 	}
 
-	return exec.Command("ffmpeg", args...)
+	// Returns a command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute
+	cmd := BuildForLowPrioExecution(ffmpegArgs)
+
+	return cmd
 }
 
 func buildFilterComplex(video *Video) []string {
@@ -163,7 +167,7 @@ func getKeyFramesAndQuality() []string {
 	}
 }
 
-func BuildHlsOptions(video *Video) []string {
+func buildHlsOptions(video *Video) []string {
 
 	segmentPattern := "stream_%v/segment_%03d.m4s"
 	playlistPath := "playlist_%v.m3u8"
@@ -194,6 +198,29 @@ func BuildHlsOptions(video *Video) []string {
 		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
 		playlistPath, // name and dir for hls playlist
 	}
+}
+
+func BuildForLowPrioExecution(ffmpegArgs []string) *exec.Cmd {
+	// ------ SET LOW PRIO PROCESS FOR UNIX BASED ------
+	if runtime.GOOS == "linux" || runtime.GOOS == "dawin" {
+
+		// Use nice to set low prio
+		args := append([]string{"-n", "10", "ffmpeg"}, ffmpegArgs...)
+		return exec.Command("nice", args...)
+	}
+
+	cmd := exec.Command("ffmpeg", ffmpegArgs...)
+
+	// ------ SET LOW PRIO PROCESS FOR WINDOWS ------
+	if runtime.GOOS == "windows" {
+		const MICROSOFT_MAGIC_CONSTANT_THAT_STARTS_LOW_PRIORITY_PROCESSES = 0x00004000
+
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			CreationFlags: MICROSOFT_MAGIC_CONSTANT_THAT_STARTS_LOW_PRIORITY_PROCESSES,
+		}
+	}
+
+	return cmd
 }
 
 /* args := []string{
