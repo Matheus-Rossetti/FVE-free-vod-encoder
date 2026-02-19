@@ -21,10 +21,7 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	input := []string{"-i", video.Source}
 	filterComplex := buildFilterComplex(video)
 	videoMaps := buildVideoMaps(video) // h.264
-	var audioMaps []string
-	if video.HasAudio {
-		audioMaps = buildAudioMaps(video) // aac | maybe switch to opus, heard sounds better at the same bitrate and handle 5.1 sound
-	}
+	audioMaps := buildAudioMaps(video) // aac | maybe switch to opus, heard sounds better at the same bitrate and handle 5.1 sound
 	keyFramesAndQuality := getKeyFramesAndQuality()
 	hlsOptions := BuildHlsOptions(video)
 
@@ -38,7 +35,7 @@ func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
 	)
 
 	if options.OutputFFmpegCommand {
-		// TODO some values need to me inclosed in double quotes "example"
+		// TODO some values need to be inclosed in double quotes "example"
 		fmt.Println("\n", strings.Join(args, " "))
 	}
 
@@ -111,7 +108,6 @@ func buildVideoMaps(video *Video) []string {
 		maps = append(maps,
 			mapFlag, version,
 			codecFlag, "libx264",
-			"-threads", "2",
 			bitrateFlag, bitrate.avg,
 			maxrateFlag, bitrate.max,
 			bufsizeFlag, bitrate.buf,
@@ -122,6 +118,10 @@ func buildVideoMaps(video *Video) []string {
 }
 
 func buildAudioMaps(video *Video) []string {
+
+	if video.HasAudio == false {
+		return nil
+	}
 
 	// --- MAP OF BITRATE VALUES ---
 	rates := map[int]string{
