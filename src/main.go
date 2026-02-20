@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
@@ -11,9 +10,8 @@ import (
 func main() {
 
 	core.CheckForFFmpegBin()
-	core.Greet()
-
 	options := core.ParseOptions()
+	core.Greet()
 
 	jobQueue := make(chan core.VideoJob, 999)
 
@@ -21,18 +19,16 @@ func main() {
 		go cli.Start(jobQueue)
 	}
 
-	for job := range jobQueue {
-		go func() {
-			start := time.Now()
-
-			video := core.NewVideo(job.AbsoluteVideoPath)
-			outputDir := core.CreateOutputDir(video.Name, options)
-			command := core.BuildFFmpegCommand(video, options)
-			// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
-			core.RunFFmpeg(command, outputDir)
-
-			fmt.Printf("Job %v concluded!\n", video.Name)
-			fmt.Printf("\n\n Encoding took %v", time.Since(start))
-		}()
+	for workerId := range options.ConcurrentEncodings {
+		go core.StartWorker(workerId, jobQueue, options)
 	}
+
+	for {
+		var quit string
+		fmt.Scanln(quit)
+		if quit == "q" {
+			break
+		}
+	}
+
 }

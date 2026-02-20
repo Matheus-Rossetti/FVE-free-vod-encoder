@@ -39,3 +39,5 @@ Acceptable 1.0 version:
     - metrics for prometheus
     - docker
     - testing
+
+    - Make changes to it on the fly, like open or close an input or output method or spawn or despawn a worker.

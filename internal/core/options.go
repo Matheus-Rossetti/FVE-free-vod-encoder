@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 type Options struct {
 	Codec           string
 	SegmentType     string
@@ -23,7 +25,7 @@ type Options struct {
 // TODO set standard values and substitute them for the ones in .env
 func ParseOptions() *Options {
 
-	// threadAmount := (runtime.NumCPU() - 4)
+	fmt.Println("Parsing options...")
 
 	return &Options{
 		Codec:                "h.264",

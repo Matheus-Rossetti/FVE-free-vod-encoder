@@ -202,7 +202,7 @@ func buildHlsOptions(video *Video) []string {
 
 func BuildForLowPrioExecution(ffmpegArgs []string) *exec.Cmd {
 	// ------ SET LOW PRIO PROCESS FOR UNIX BASED ------
-	if runtime.GOOS == "linux" || runtime.GOOS == "dawin" {
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
 
 		// Use nice to set low prio
 		args := append([]string{"-n", "10", "ffmpeg"}, ffmpegArgs...)

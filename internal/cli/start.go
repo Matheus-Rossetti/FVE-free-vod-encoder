@@ -8,6 +8,5 @@ import (
 
 func Start(jobQueue chan<- core.VideoJob) {
 	fmt.Println("Starting terminal input method...")
-
 	Run(jobQueue)
 }
