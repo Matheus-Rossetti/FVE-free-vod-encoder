@@ -41,3 +41,15 @@ Acceptable 1.0 version:
     - testing
 
     - Make changes to it on the fly, like open or close an input or output method or spawn or despawn a worker.
+
+
+    Actual todo:
+    - There's a bug in the command builder that sets the same bitrate to all renditions, 480p rendition has bitrate for 1080p
+    - Fixed bitrate for all videos of the same resolution isn't a good idea, check out VMAF from netflix
+    - Or even 2-pass encoding
+    - Also, set the -g to an actual real value, meaning we gotta get the framerate from ffprobe and do some simple math
+    - after that, you can go back to:
+    - adding retry logic to downloads
+    - limiting the amount of videos inside downloaded-videos/ dir 
+    - while not limiting new inputs, maybe a queue to download videos just like we have for the workers?
+    - Dunno, good luck, future me!
