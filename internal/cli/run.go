@@ -12,21 +12,24 @@ func Run(jobQueue chan<- core.VideoJob) {
 	fmt.Println("Frevod is waiting for paths or URLs in the terminal!")
 	fmt.Println("Just paste it down below and the video will be encoded!")
 
-	var videoPath string
+	var videoUri string
 	for {
 		fmt.Print("\n>> ")
-		_, err := fmt.Scanln(&videoPath)
+		_, err := fmt.Scanln(&videoUri)
 		if err != nil {
 			log.Fatal("Error getting input from the terminal", err)
 		}
-		// TODO check if URI is url or path
 
-		// if it's url
-		// TODO download
+		// uriType := core.GetUriType(videoUri)
+		// if uriType == "url" {
+		// 	videoUri = core.DownloadAndStoreVideo(videoUri)
+		// }
 
-		absoluteVideoPath, err := filepath.Abs(videoPath)
+		videoUri = core.DownloadAndStoreVideo(videoUri)
+
+		absoluteVideoPath, err := filepath.Abs(videoUri)
 		if err != nil {
-			log.Fatal("Couldn't get absolute path for video: ", videoPath, "\nError: ", err)
+			log.Fatal("Couldn't get absolute path for video: ", videoUri, "\nError: ", err)
 		}
 
 		jobQueue <- core.VideoJob{

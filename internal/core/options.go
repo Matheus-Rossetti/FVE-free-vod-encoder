@@ -20,6 +20,7 @@ type Options struct {
 	Threads              int
 	OutputFFmpegCommand  bool
 	OutputEncodedVideoTo string
+	MaxStoredVideos      int
 }
 
 // TODO set standard values and substitute them for the ones in .env
@@ -38,9 +39,8 @@ func ParseOptions() *Options {
 		StoreS3:              false,
 		Upload:               false,
 		ExposeMetrics:        false,
-		ConcurrentEncodings:  2,
-		Threads:              1, // This is threads per rendition
-		OutputFFmpegCommand:  false,
+		ConcurrentEncodings:  2, // also specifies the amount of downloaded videos waiting to be processed
+		OutputFFmpegCommand:  true,
 		OutputEncodedVideoTo: "output",
 	}
 }

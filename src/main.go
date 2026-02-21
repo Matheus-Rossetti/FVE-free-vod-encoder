@@ -5,6 +5,7 @@ import (
 
 	"github.com/Matheus-Rossetti/frevod/internal/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/Matheus-Rossetti/frevod/internal/rest"
 )
 
 func main() {
@@ -18,6 +19,9 @@ func main() {
 	if options.UseTerminal {
 		go cli.Start(jobQueue)
 	}
+	if options.UseREST {
+		go rest.Start(jobQueue, ":8080")
+	}
 
 	for workerId := range options.ConcurrentEncodings {
 		go core.StartWorker(workerId, jobQueue, options)
@@ -30,5 +34,4 @@ func main() {
 			break
 		}
 	}
-
 }
