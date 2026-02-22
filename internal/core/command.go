@@ -106,7 +106,7 @@ func buildVideoMaps(video *Video) []string {
 		bitrateFlag := fmt.Sprintf("-b:v:%v", index)
 		maxrateFlag := fmt.Sprintf("-maxrate:v:%v", index)
 		bufsizeFlag := fmt.Sprintf("-bufsize:v:%v", index)
-		bitrate := rates[video.ReferenceResolution]
+		bitrate := rates[video.RenditionsToMake[index].value]
 
 		// --- TURN IT ALL INTO A SLICE ---
 		maps = append(maps,

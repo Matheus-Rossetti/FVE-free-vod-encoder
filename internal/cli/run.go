@@ -25,7 +25,7 @@ func Run(jobQueue chan<- core.VideoJob) {
 		// 	videoUri = core.DownloadAndStoreVideo(videoUri)
 		// }
 
-		videoUri = core.DownloadAndStoreVideo(videoUri)
+		// videoUri = core.DownloadAndStoreVideo(videoUri)
 
 		absoluteVideoPath, err := filepath.Abs(videoUri)
 		if err != nil {

@@ -4,6 +4,8 @@ It abstracts FFmpeg complexity and integrates seamlessly with distributed system
 
 You can choose the format, either HLS or DASH.
 
+Building a cloud-native media converter in Go to replace expensive SaaS solutions
+
 Frevod has many ways to receive inputs and store outputs:
 
 INPUTS:
