@@ -1,13 +1,17 @@
 package downloader
 
-import "github.com/Matheus-Rossetti/frevod/internal/core"
+import (
+	"fmt"
 
-func Start(downloadQueue <-chan DownloadJob, options core.Options) {
+	"github.com/Matheus-Rossetti/frevod/internal/core"
+)
 
-	downloadSlots := make(chan DownloadJob, options.MaxStoredVideos)
-
-	for downloadJob := range downloadQueue {
-		downloadSlots <- downloadJob // when downloadSlots is full, this will wait until there's a free slot
-		go DownloadAndStoreVideo(downloadJob.Uri)
+func Start(downloaderId int, downloadJobQueue <-chan DownloadJob, videoJobQueue chan<- core.VideoJob, options *core.Options) {
+	for downloadJob := range downloadJobQueue {
+		fmt.Printf("Download worker %v received %v from %v\n", downloaderId, downloadJob.Uri, downloadJob.Source)
+		videoPath := DownloadAndStoreVideo(downloadJob.Uri)
+		videoJobQueue <- core.VideoJob{
+			AbsoluteVideoPath: videoPath,
+		}
 	}
 }

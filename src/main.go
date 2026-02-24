@@ -6,6 +6,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/downloader"
+	"github.com/Matheus-Rossetti/frevod/internal/notifier"
 )
 
 func main() {
@@ -14,20 +15,24 @@ func main() {
 	options := core.ParseOptions()
 	core.Greet()
 
-	jobQueue := make(chan core.VideoJob, 999)
-	downloadQueue := make(chan downloader.DownloadJob, 999)
+	downloadJobQueue := make(chan downloader.DownloadJob, 999)
+	videoJobQueue := make(chan core.VideoJob, options.ConcurrentEncodings)
+
+	notifier := notifier.New()
 
 	if options.UseTerminal {
-		go cli.Start(downloadQueue)
+		go cli.Start(downloadJobQueue)
 	}
 	// if options.UseREST {
 	// 	go rest.Start(downloadQueue, ":8080")
 	// }
 
-	downloader.Start(downloadQueue, *options)
+	for downloaderId := range options.ConcurrentEncodings {
+		go downloader.Start(downloaderId, downloadJobQueue, videoJobQueue, options)
+	}
 
-	for workerId := range options.ConcurrentEncodings {
-		go core.StartWorker(workerId, jobQueue, options)
+	for processorId := range options.ConcurrentEncodings {
+		go core.Start(processorId, videoJobQueue, options, notifier)
 	}
 
 	for {

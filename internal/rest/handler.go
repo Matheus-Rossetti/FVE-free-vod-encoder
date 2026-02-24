@@ -25,7 +25,6 @@ func videoHandler(jobQueue chan<- core.VideoJob) http.HandlerFunc {
 		// the queue
 
 		jobQueue <- core.VideoJob{
-			Source:            "REST",
 			AbsoluteVideoPath: "",
 		}
 

@@ -24,7 +24,3 @@ func CreateOutputDir(videoName string, options *Options) string {
 
 	return dirName
 }
-
-func CreateDownloadDir() {
-	os.Mkdir("downloaded-videos", 0700)
-}

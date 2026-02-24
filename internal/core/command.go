@@ -159,7 +159,7 @@ func buildAudioMaps(video *Video) []string {
 
 func getKeyFramesAndQuality() []string {
 	return []string{
-		"-preset", "veryslow", // encodes slower but with better quality and compression
+		"-preset", "slow", // encodes slower but with better quality and compression
 		"-pix_fmt", "yuv420p", // sets yuv420p, which is widely adopted
 		"-force_key_frames", "expr:gte(t, n_forced*1)", // force a keyframe every seconds
 		"-sc_threshold", "0", // stops H.264 from automatically adding iframes at scene changes
