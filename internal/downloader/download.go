@@ -1,4 +1,4 @@
-package core
+package downloader
 
 import (
 	"io"
@@ -6,7 +6,14 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
+
+type DownloadJob struct {
+	Source string
+	Uri    string
+}
 
 // Downloads a video and stores it in downloads/
 func DownloadAndStoreVideo(url string) string {
@@ -16,7 +23,7 @@ func DownloadAndStoreVideo(url string) string {
 		log.Fatal("Expected URL to download a video file. Got URL to download: ", fyleType)
 	}
 
-	CreateDownloadDir()
+	core.CreateDownloadDir()
 
 	file, err := os.CreateTemp("downloaded-videos", "video-*")
 	if err != nil {

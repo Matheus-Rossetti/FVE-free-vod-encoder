@@ -42,5 +42,6 @@ func ParseOptions() *Options {
 		ConcurrentEncodings:  2, // also specifies the amount of downloaded videos waiting to be processed
 		OutputFFmpegCommand:  true,
 		OutputEncodedVideoTo: "output",
+		MaxStoredVideos:      2,
 	}
 }

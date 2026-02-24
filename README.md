@@ -6,6 +6,8 @@ You can choose the format, either HLS or DASH.
 
 Building a cloud-native media converter in Go to replace expensive SaaS solutions
 
+From anywhere, to anywhere
+
 Frevod has many ways to receive inputs and store outputs:
 
 INPUTS:

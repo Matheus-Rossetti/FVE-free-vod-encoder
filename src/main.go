@@ -5,7 +5,7 @@ import (
 
 	"github.com/Matheus-Rossetti/frevod/internal/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-	"github.com/Matheus-Rossetti/frevod/internal/rest"
+	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 )
 
 func main() {
@@ -15,13 +15,16 @@ func main() {
 	core.Greet()
 
 	jobQueue := make(chan core.VideoJob, 999)
+	downloadQueue := make(chan downloader.DownloadJob, 999)
 
 	if options.UseTerminal {
-		go cli.Start(jobQueue)
+		go cli.Start(downloadQueue)
 	}
-	if options.UseREST {
-		go rest.Start(jobQueue, ":8080")
-	}
+	// if options.UseREST {
+	// 	go rest.Start(downloadQueue, ":8080")
+	// }
+
+	downloader.Start(downloadQueue, *options)
 
 	for workerId := range options.ConcurrentEncodings {
 		go core.StartWorker(workerId, jobQueue, options)

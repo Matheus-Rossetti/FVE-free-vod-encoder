@@ -15,6 +15,9 @@ func StartWorker(workerId int, jobQueue <-chan VideoJob, options *Options) {
 		// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
 		RunFFmpeg(command, outputDir)
 
+		// TODO call interface to notify video finished
+		Notification.FinishedEncoding()
+
 		fmt.Printf("Job %v concluded!\n", video.Name)
 	}
 }

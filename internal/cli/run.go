@@ -3,12 +3,11 @@ package cli
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 
-	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 )
 
-func Run(jobQueue chan<- core.VideoJob) {
+func Run(downloadQueue chan<- downloader.DownloadJob) {
 	fmt.Println("Frevod is waiting for paths or URLs in the terminal!")
 	fmt.Println("Just paste it down below and the video will be encoded!")
 
@@ -20,21 +19,9 @@ func Run(jobQueue chan<- core.VideoJob) {
 			log.Fatal("Error getting input from the terminal", err)
 		}
 
-		// uriType := core.GetUriType(videoUri)
-		// if uriType == "url" {
-		// 	videoUri = core.DownloadAndStoreVideo(videoUri)
-		// }
-
-		// videoUri = core.DownloadAndStoreVideo(videoUri)
-
-		absoluteVideoPath, err := filepath.Abs(videoUri)
-		if err != nil {
-			log.Fatal("Couldn't get absolute path for video: ", videoUri, "\nError: ", err)
-		}
-
-		jobQueue <- core.VideoJob{
-			Source:            "Terminal",
-			AbsoluteVideoPath: absoluteVideoPath, // absolute path is safer than relative path
+		downloadQueue <- downloader.DownloadJob{
+			Source: "Terminal",
+			Uri:    videoUri,
 		}
 	}
 }
