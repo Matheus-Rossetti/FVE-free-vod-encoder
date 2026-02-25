@@ -1,4 +1,4 @@
-package core
+package encoder
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"syscall"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 // This is quite a complex file, it operates multiple string concatenations
@@ -16,7 +18,7 @@ import (
 // I tried my best not to make this ugly, okay? I'm Sorry
 
 // THERE'S AN EXAMPLE OF THE OUTPUT OF THIS FUNCTION AT THE END OF THIS FILE
-func BuildFFmpegCommand(video *Video, options *Options) *exec.Cmd {
+func BuildFFmpegCommand(video *Video, options *core.Options) *exec.Cmd {
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
 	input := []string{"-i", video.Source}

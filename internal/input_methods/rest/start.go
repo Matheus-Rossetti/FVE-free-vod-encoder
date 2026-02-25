@@ -7,7 +7,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(jobQueue chan<- core.VideoJob, port string) {
+func Start(jobQueue chan<- core.Job, port string) {
 	fmt.Printf("\nStarting REST input method in port %v...", port)
 
 	AddRoutes(jobQueue)

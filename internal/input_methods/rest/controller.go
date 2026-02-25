@@ -6,6 +6,6 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func AddRoutes(jobQueue chan<- core.VideoJob) {
+func AddRoutes(jobQueue chan<- core.Job) {
 	http.HandleFunc("POST /video", videoHandler(jobQueue))
 }

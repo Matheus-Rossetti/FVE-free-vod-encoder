@@ -5,47 +5,33 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
-type DownloadJob struct {
-	Source string // cli | rabbitmq | REST API | etc...
-	Uri    string
-}
-
 // Returns the absolute path of the downloaded video
-func DownloadAndStoreVideo(url string) string {
+func DownloadToFile(url string, file *os.File) string {
+	defer file.Close()
 
+	// Check if it's a video
 	fyleType := checkFileType(url)
 	if fyleType != "video" {
 		log.Fatal("Expected URL to download a video file. Got URL to download: ", fyleType)
 	}
 
-	os.Mkdir("downloaded-videos", 0700)
-	file, err := os.CreateTemp("downloaded-videos", "video-*")
-	if err != nil {
-		log.Fatal("Failed when creating temp file to store video from download")
-	}
-	defer file.Close()
-
+	// Connect to server
 	request, err := http.Get(url)
 	if err != nil {
 		log.Fatal("Error during get request to download video", err)
 	}
 	defer request.Body.Close()
 
+	// Download into the file
 	_, err = io.Copy(file, request.Body)
 	if err != nil {
 		log.Fatal("Error storing body stream into file", err)
 	}
 
-	absoluteVideoPath, err := filepath.Abs(file.Name())
-	if err != nil {
-		log.Fatal("Error getting the absolute video path after downloading", err)
-	}
-
-	return absoluteVideoPath
+	return file.Name()
 }
 
 // Downloads the first 512 bytes (or less) and check fileType

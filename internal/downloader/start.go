@@ -6,12 +6,13 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(downloaderId int, downloadJobQueue <-chan DownloadJob, videoJobQueue chan<- core.VideoJob, options *core.Options) {
-	for downloadJob := range downloadJobQueue {
-		fmt.Printf("Download worker %v received %v from %v\n", downloaderId, downloadJob.Uri, downloadJob.Source)
-		videoPath := DownloadAndStoreVideo(downloadJob.Uri)
-		videoJobQueue <- core.VideoJob{
-			AbsoluteVideoPath: videoPath,
-		}
+func Start(downloaderId int, downloadQueue <-chan core.Job, encodeQueue chan<- core.Job, options *core.Options) {
+	for job := range downloadQueue {
+		fmt.Printf("Download worker %v received %v from %v\n", downloaderId, job.VideoUri, job.Source)
+
+		videoPath := DownloadToFile(job.VideoUri, job.File)
+		job.SetAbsolutePath(videoPath)
+
+		encodeQueue <- job
 	}
 }

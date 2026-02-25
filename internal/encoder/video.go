@@ -1,4 +1,4 @@
-package core
+package encoder
 
 import (
 	"path/filepath"
@@ -83,7 +83,7 @@ func NewVideo(videoPath string) *Video {
 		}
 	}
 
-	// just in case a video is smaller than 480p
+	// just in case a video res is lower than the lowest supported res
 	if len(video.RenditionsToMake) == 0 {
 		video.RenditionsToMake = append(video.RenditionsToMake, allResolutions[len(allResolutions)-1])
 	}

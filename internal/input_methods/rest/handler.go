@@ -8,7 +8,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func videoHandler(jobQueue chan<- core.VideoJob) http.HandlerFunc {
+func videoHandler(jobQueue chan<- core.Job) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var request struct {
@@ -24,7 +24,7 @@ func videoHandler(jobQueue chan<- core.VideoJob) http.HandlerFunc {
 		// then get the absolutepath for it and add it to
 		// the queue
 
-		jobQueue <- core.VideoJob{
+		jobQueue <- core.Job{
 			AbsoluteVideoPath: "",
 		}
 
