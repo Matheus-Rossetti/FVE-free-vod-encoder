@@ -6,7 +6,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(downloadQueue chan<- core.Job) {
+func Start(downloadQueue chan<- core.DownloadJob) {
 	fmt.Println("Starting terminal input method...")
 	Run(downloadQueue)
 }

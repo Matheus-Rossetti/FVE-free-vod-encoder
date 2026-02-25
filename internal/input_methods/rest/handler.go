@@ -8,7 +8,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func videoHandler(jobQueue chan<- core.Job) http.HandlerFunc {
+func videoHandler(downloadQueue chan<- core.DownloadJob) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var request struct {
@@ -24,9 +24,8 @@ func videoHandler(jobQueue chan<- core.Job) http.HandlerFunc {
 		// then get the absolutepath for it and add it to
 		// the queue
 
-		jobQueue <- core.Job{
-			AbsoluteVideoPath: "",
-		}
+		downloadJob := core.NewDownloadJob("", "")
+		downloadQueue <- downloadJob
 
 		fmt.Fprintf(w, "Video {video.name} added to internal queue and will be processed soon!")
 	})

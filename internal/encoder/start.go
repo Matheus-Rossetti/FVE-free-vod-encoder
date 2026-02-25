@@ -3,27 +3,27 @@ package encoder
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(workerId int, encodeQueue <-chan core.Job, options *core.Options, notifier INotifier) {
-	for job := range encodeQueue {
-		fmt.Printf("Encode worker %v received %v", workerId, job.AbsoluteVideoPath)
+func Start(workerId int, encodeQueue <-chan core.EncodeJob, filePool chan<- *os.File, options *core.Options) {
+	for encodeJob := range encodeQueue {
+		fmt.Printf("Encode worker %v received %v\n", workerId, encodeJob.AbsoluteVideoPath)
 
-		video := NewVideo(job.AbsoluteVideoPath)
-		// outputDir := CreateOutputDir(video.Name, options)
+		video := NewVideo(encodeJob.AbsoluteVideoPath)
 		cmd := BuildFFmpegCommand(video, options)
 
+		outputDir := createOutputDir()
 		// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
-		cmd.Dir = job.OutputDir
+		cmd.Dir = outputDir
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Fatal("error running the command\n", err, "for:", string(output))
 		}
 
-		// TODO call interface to notify video finished
-		notifier.FinishedEncoding()
+		filePool <- encodeJob.File // return the file to the pool
 
 		fmt.Printf("Job %v concluded!\n", video.Name)
 	}

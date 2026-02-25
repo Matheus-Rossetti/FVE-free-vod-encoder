@@ -5,10 +5,9 @@ import (
 	"log"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-	"github.com/Matheus-Rossetti/frevod/internal/workspace"
 )
 
-func Run(downloadQueue chan<- core.Job) {
+func Run(downloadQueue chan<- core.DownloadJob) {
 	fmt.Println("Frevod is waiting for paths or URLs in the terminal!")
 	fmt.Println("Just paste it down below and the video will be encoded!")
 
@@ -20,8 +19,7 @@ func Run(downloadQueue chan<- core.Job) {
 			log.Fatal("Error getting input from the terminal", err)
 		}
 
-		file, outputDir := workspace.Prepare()
-		job := core.NewJob(file, outputDir, videoUri, "terminal")
-		downloadQueue <- *job
+		downloadJob := core.NewDownloadJob(videoUri, "terminal")
+		downloadQueue <- downloadJob
 	}
 }

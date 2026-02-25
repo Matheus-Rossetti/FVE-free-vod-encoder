@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
-	"github.com/Matheus-Rossetti/frevod/internal/notifier"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
+	"github.com/Matheus-Rossetti/frevod/internal/workspace"
 )
 
 func main() {
@@ -17,17 +18,21 @@ func main() {
 	options := options.ParseOptions()
 	core.Greet()
 
-	downloadQueue := make(chan core.Job, 999)
-	encodeQueue := make(chan core.Job, options.ConcurrentEncodings)
+	filePool := make(chan *os.File, options.ConcurrentEncodings*2)
+	downloadQueue := make(chan core.DownloadJob, 999)
+	encodeQueue := make(chan core.EncodeJob, options.ConcurrentEncodings)
 
-	notifier := notifier.New()
-
-	for downloaderId := range options.ConcurrentEncodings {
-		go downloader.Start(downloaderId, downloadQueue, encodeQueue, options)
+	videoSlot, _ := workspace.Prepare(options)
+	for _, file := range videoSlot {
+		filePool <- file
 	}
 
-	for processorId := range options.ConcurrentEncodings {
-		go encoder.Start(processorId, encodeQueue, options, notifier)
+	for index := range options.ConcurrentEncodings * 2 {
+		go downloader.Start(index, downloadQueue, encodeQueue, filePool, options)
+	}
+
+	for index := range options.ConcurrentEncodings {
+		go encoder.Start(index, encodeQueue, filePool, options)
 	}
 
 	if options.UseTerminal {
@@ -41,6 +46,9 @@ func main() {
 		var quit string
 		fmt.Scanln(quit)
 		if quit == "q" {
+			for _, file := range videoSlot {
+				file.Close()
+			}
 			break
 		}
 	}

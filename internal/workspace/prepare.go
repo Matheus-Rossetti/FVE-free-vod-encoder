@@ -1,36 +1,30 @@
 package workspace
 
 import (
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func createOutputDir() string {
-	os.Mkdir("output", 0700)
-
-	// The return value here is "output/video-{random-string}"
-	dirName, err := os.MkdirTemp("output", "video-*")
+func createDownloadFile(index int) *os.File {
+	slotName := fmt.Sprintf("download-slots/video-%v", index)
+	file, err := os.Create(slotName)
 	if err != nil {
-		log.Fatal("Error creating output directory: ", err)
-	}
-
-	return dirName
-}
-
-func createDownloadFile() *os.File {
-	os.Mkdir("downloaded-videos", 0700)
-
-	file, err := os.CreateTemp("downloaded-videos", "download-*")
-	if err != nil {
-		log.Fatal("Failed when creating temp file to store video from download")
+		log.Fatal("Failed when creating temp file to store video from download", err)
 	}
 
 	return file
 }
 
-func Prepare() (*os.File, string) {
-	file := createDownloadFile()
-	outputDir := createOutputDir()
+func Prepare(options *core.Options) []*os.File {
+	os.Mkdir("download-slots", 0700)
+	var downloadSlots []*os.File
+	for index := range options.ConcurrentEncodings * 2 {
+		file := createDownloadFile(index)
+		downloadSlots = append(downloadSlots, file)
+	}
 
-	return file, outputDir
+	return downloadSlots
 }

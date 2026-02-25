@@ -8,9 +8,7 @@ import (
 	"strings"
 )
 
-// Returns the absolute path of the downloaded video
-func DownloadToFile(url string, file *os.File) string {
-	defer file.Close()
+func DownloadToFile(url string, file *os.File) {
 
 	// Check if it's a video
 	fyleType := checkFileType(url)
@@ -30,8 +28,6 @@ func DownloadToFile(url string, file *os.File) string {
 	if err != nil {
 		log.Fatal("Error storing body stream into file", err)
 	}
-
-	return file.Name()
 }
 
 // Downloads the first 512 bytes (or less) and check fileType

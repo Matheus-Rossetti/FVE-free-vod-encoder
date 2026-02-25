@@ -23,7 +23,7 @@ func ParseOptions() *core.Options {
 		Upload:               false,
 		ExposeMetrics:        false,
 		ConcurrentEncodings:  2, // also specifies the amount of downloaded videos waiting to be processed
-		OutputFFmpegCommand:  true,
+		OutputFFmpegCommand:  false,
 		OutputEncodedVideoTo: "output",
 		MaxStoredVideos:      2,
 	}
