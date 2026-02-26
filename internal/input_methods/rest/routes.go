@@ -7,5 +7,5 @@ import (
 )
 
 func AddRoutes(downloadQueue chan<- core.DownloadJob) {
-	http.HandleFunc("POST /video", videoHandler(downloadQueue))
+	http.HandleFunc("POST /encode", videoHandler(downloadQueue))
 }

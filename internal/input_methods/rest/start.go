@@ -8,7 +8,7 @@ import (
 )
 
 func Start(downloadQueue chan<- core.DownloadJob, port string) {
-	fmt.Printf("\nStarting REST input method in port %v...", port)
+	fmt.Printf("\nStarting REST input method in port %v\n", port)
 
 	AddRoutes(downloadQueue)
 	http.ListenAndServe(port, nil)

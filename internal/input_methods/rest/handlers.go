@@ -18,13 +18,15 @@ func videoHandler(downloadQueue chan<- core.DownloadJob) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
 		}
 
-		// Download video and store in downloads/
-		// then get the absolutepath for it and add it to
-		// the queue
+		if request.VideoUrl == "" {
+			http.Error(w, "Package needs 'video_url'", http.StatusUnprocessableEntity)
+			return
+		}
 
-		downloadJob := core.NewDownloadJob("", "")
+		downloadJob := core.NewDownloadJob(request.VideoUrl, "REST")
 		downloadQueue <- downloadJob
 
 		fmt.Fprintf(w, "Video {video.name} added to internal queue and will be processed soon!")
