@@ -10,6 +10,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
+	"github.com/Matheus-Rossetti/frevod/internal/uploader"
 	"github.com/Matheus-Rossetti/frevod/internal/workspace"
 )
 
@@ -42,6 +43,8 @@ func main() {
 	if options.UseREST {
 		go rest.Start(downloadQueue, ":8080")
 	}
+
+	uploader.Start()
 
 	for {
 		var quit string
