@@ -3,21 +3,23 @@ package downloader
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(id int, downloadQueue <-chan core.DownloadJob, encodeQueue chan<- core.EncodeJob, filePool <-chan *os.File, options *core.Options) {
-	for downloadJob := range downloadQueue {
+func Start(id int, downloadQueue <-chan *core.Job, encodeQueue chan<- *core.Job, filePool <-chan *os.File, options *core.Options) {
+	for job := range downloadQueue {
 		file := <-filePool
 
-		fmt.Printf("Download worker %v received %v from %v\n", id, downloadJob.VideoUri, downloadJob.Source)
+		fmt.Printf("Download worker %v received %v from %v\n", id, job.DownloadJob.VideoUri, job.DownloadJob.Source)
 
 		file.Truncate(0) // Cleans the file without deleting it
 		file.Seek(0, 0)  // 'Go' to the beginning of the file
-		DownloadToFile(downloadJob.VideoUri, file)
+		DownloadToFile(job.DownloadJob.VideoUri, file)
 
-		encodeJob := core.NewEncodeJob(file)
-		encodeQueue <- encodeJob
+		job.EncodeJob.AbsoluteVideoPath, _ = filepath.Abs(file.Name())
+		job.EncodeJob.File = file
+		encodeQueue <- job
 	}
 }

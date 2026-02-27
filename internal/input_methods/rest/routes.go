@@ -6,6 +6,6 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func AddRoutes(downloadQueue chan<- core.DownloadJob) {
+func AddRoutes(downloadQueue chan<- *core.Job) {
 	http.HandleFunc("POST /encode", videoHandler(downloadQueue))
 }

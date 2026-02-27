@@ -7,7 +7,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(downloadQueue chan<- core.DownloadJob, port string) {
+func Start(downloadQueue chan<- *core.Job, port string) {
 	fmt.Printf("\nStarting REST input method in port %v\n", port)
 
 	AddRoutes(downloadQueue)

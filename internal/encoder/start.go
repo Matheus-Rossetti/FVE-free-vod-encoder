@@ -8,11 +8,11 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(workerId int, encodeQueue <-chan core.EncodeJob, filePool chan<- *os.File, options *core.Options) {
-	for encodeJob := range encodeQueue {
-		fmt.Printf("Encode worker %v received %v\n", workerId, encodeJob.AbsoluteVideoPath)
+func Start(workerId int, encodeQueue <-chan *core.Job, uploadQueue chan<- *core.Job, filePool chan<- *os.File, options *core.Options) {
+	for job := range encodeQueue {
+		fmt.Printf("Encode worker %v received %v\n", workerId, job.EncodeJob.AbsoluteVideoPath)
 
-		video := NewVideo(encodeJob.AbsoluteVideoPath)
+		video := NewVideo(job.EncodeJob.AbsoluteVideoPath)
 		cmd := BuildFFmpegCommand(video, options)
 
 		outputDir := createOutputDir()
@@ -23,7 +23,10 @@ func Start(workerId int, encodeQueue <-chan core.EncodeJob, filePool chan<- *os.
 			log.Fatal("error running the command\n", err, "for:", string(output))
 		}
 
-		filePool <- encodeJob.File // return the file to the pool
+		filePool <- job.EncodeJob.File // return the file to the pool
+
+		job.UploadJob.DirToUploadFrom = outputDir
+		uploadQueue <- job
 
 		fmt.Printf("Job %v concluded!\n", video.Name)
 	}
