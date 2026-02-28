@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// START UPLOADERS
-	go uploader.Start(0, uploadQueue) // just one for testing
+	go uploader.Start(0, uploadQueue, options) // just one for testing
 
 	// START INPUT METHODS
 	if options.UseTerminal {
