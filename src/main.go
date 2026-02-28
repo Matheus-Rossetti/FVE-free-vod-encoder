@@ -41,9 +41,7 @@ func main() {
 	}
 
 	// START UPLOADERS
-	for index := range options.ConcurrentEncodings {
-		go uploader.Start(index, uploadQueue)
-	}
+	go uploader.Start(0, uploadQueue) // just one for testing
 
 	// START INPUT METHODS
 	if options.UseTerminal {
