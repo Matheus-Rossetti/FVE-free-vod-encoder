@@ -21,7 +21,7 @@ func createDownloadFile(index int) *os.File {
 func Prepare(options *core.Options) []*os.File {
 	os.Mkdir("download-slots", 0700)
 	var downloadSlots []*os.File
-	for index := range options.ConcurrentEncodings * 2 {
+	for index := range options.Encode.ConcurrentEncodings * 2 {
 		file := createDownloadFile(index)
 		downloadSlots = append(downloadSlots, file)
 	}

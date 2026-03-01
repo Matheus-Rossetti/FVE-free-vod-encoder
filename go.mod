@@ -2,7 +2,10 @@ module github.com/Matheus-Rossetti/frevod
 
 go 1.24.6
 
-require github.com/minio/minio-go/v7 v7.0.98
+require (
+	github.com/minio/minio-go/v7 v7.0.98
+	go.yaml.in/yaml/v4 v4.0.0-rc.4
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

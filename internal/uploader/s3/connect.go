@@ -12,10 +12,10 @@ import (
 func Connect(options *core.Options) (context.Context, *minio.Client) {
 
 	ctx := context.Background()
-	endpoint := options.S3Endpoint
-	accessKeyID := options.S3AccessKey
-	secretAccessKey := options.S3SecretAccessKey
-	useSSL := options.S3UseSSL
+	endpoint := options.Upload.S3.S3Endpoint
+	accessKeyID := options.Upload.S3.S3AccessKey
+	secretAccessKey := options.Upload.S3.S3SecretAccessKey
+	useSSL := options.Upload.S3.S3UseSSL
 
 	// Initialize client
 	client, err := minio.New(endpoint, &minio.Options{

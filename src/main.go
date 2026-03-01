@@ -20,10 +20,10 @@ func main() {
 	options := options.ParseOptions()
 	core.Greet()
 
-	filePool := make(chan *os.File, options.ConcurrentEncodings*2)
+	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
 	downloadQueue := make(chan *core.Job, 999)
-	encodeQueue := make(chan *core.Job, options.ConcurrentEncodings)
-	uploadQueue := make(chan *core.Job, options.ConcurrentEncodings)
+	encodeQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
+	uploadQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
 
 	videoSlot := workspace.Prepare(options)
 	for _, file := range videoSlot {
@@ -31,20 +31,20 @@ func main() {
 	}
 
 	// START INPUT METHODS
-	if options.UseTerminal {
+	if options.Input.UseTerminal {
 		go cli.Start(downloadQueue)
 	}
-	if options.UseREST {
+	if options.Input.UseREST {
 		go rest.Start(downloadQueue, ":8080")
 	}
 
 	// START DOWNLOADERS
-	for index := range options.ConcurrentEncodings * 2 {
+	for index := range options.Encode.ConcurrentEncodings * 2 {
 		go downloader.Start(index, downloadQueue, encodeQueue, filePool, options)
 	}
 
 	// START ENCODERS
-	for index := range options.ConcurrentEncodings {
+	for index := range options.Encode.ConcurrentEncodings {
 		go encoder.Start(index, encodeQueue, uploadQueue, filePool, options)
 	}
 

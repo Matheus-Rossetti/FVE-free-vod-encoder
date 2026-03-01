@@ -37,7 +37,7 @@ func BuildFFmpegCommand(video *Video, options *core.Options) *exec.Cmd {
 		hlsOptions,
 	)
 
-	if options.OutputFFmpegCommand {
+	if options.Encode.OutputFFmpegCommand {
 		// TODO some values need to be inclosed in double quotes "example"
 		fmt.Println("\n", strings.Join(ffmpegArgs, " "))
 	}

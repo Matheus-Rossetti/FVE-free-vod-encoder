@@ -17,13 +17,13 @@ func Start(id int, uploadQueue <-chan *core.Job, options *core.Options) {
 	// START CONNECTIONS
 	var ctx context.Context
 	var client *minio.Client
-	if options.UseS3 {
+	if options.Upload.S3.Use {
 		ctx, client = s3.Connect(options)
 	}
 
 	// CREATE POOL
-	uploadPool := make(chan struct{}, options.ConcurrentUploads)
-	for range options.ConcurrentUploads {
+	uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
+	for range options.Upload.ConcurrentUploads {
 		uploadPool <- struct{}{}
 	}
 
@@ -45,7 +45,7 @@ func Start(id int, uploadQueue <-chan *core.Job, options *core.Options) {
 				<-uploadPool // takes a file to upload
 				wg.Add(1)
 
-				if options.UseS3 {
+				if options.Upload.S3.Use {
 
 					go func() {
 						defer wg.Done()
