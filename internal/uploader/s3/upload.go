@@ -8,7 +8,7 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-func UploadFiles(client *minio.Client, key string, ctx context.Context, relativePath string, uploadSlot chan<- struct{}) {
+func UploadFiles(client *minio.Client, key string, ctx context.Context, relativePath string, uploadPool chan<- struct{}) {
 
 	contentType := "video/mp4"
 
@@ -21,5 +21,5 @@ func UploadFiles(client *minio.Client, key string, ctx context.Context, relative
 	}
 
 	fmt.Printf("Successfully uploaded %s of size %d\n", key, info.Size)
-	uploadSlot <- struct{}{}
+	uploadPool <- struct{}{} // return one to the pool
 }

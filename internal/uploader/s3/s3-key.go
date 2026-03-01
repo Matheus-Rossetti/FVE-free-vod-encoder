@@ -8,7 +8,7 @@ import (
 )
 
 func GetKey(job *core.Job, filePath string) string {
-	relativePath, _ := filepath.Rel(job.UploadJob.DirToUploadFrom, filePath)
+	relativePath, _ := filepath.Rel(job.UploadJob.Dir, filePath)
 
 	dir := filepath.Dir(relativePath)
 	filename := filepath.Base((relativePath))

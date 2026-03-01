@@ -10,14 +10,14 @@ import (
 )
 
 func Connect(options *core.Options) (context.Context, *minio.Client) {
-	// TODO get these values from config.yml or from env vars
+
 	ctx := context.Background()
 	endpoint := options.S3Endpoint
 	accessKeyID := options.S3AccessKey
 	secretAccessKey := options.S3SecretAccessKey
 	useSSL := options.S3UseSSL
 
-	// Initialize client with
+	// Initialize client
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,

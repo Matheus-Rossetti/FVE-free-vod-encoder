@@ -22,10 +22,11 @@ func Start(workerId int, encodeQueue <-chan *core.Job, uploadQueue chan<- *core.
 		if err != nil {
 			log.Fatal("error running the command\n", err, "for:", string(output))
 		}
+		fmt.Printf("\n\nFFMPEG OUTPUT: %v\n\n", string(output))
 
 		filePool <- job.EncodeJob.File // return the file to the pool
 
-		job.UploadJob.DirToUploadFrom = outputDir
+		job.UploadJob.Dir = outputDir
 		uploadQueue <- job
 
 		fmt.Printf("Job %v concluded!\n", video.Name)

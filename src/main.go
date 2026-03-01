@@ -30,6 +30,14 @@ func main() {
 		filePool <- file
 	}
 
+	// START INPUT METHODS
+	if options.UseTerminal {
+		go cli.Start(downloadQueue)
+	}
+	if options.UseREST {
+		go rest.Start(downloadQueue, ":8080")
+	}
+
 	// START DOWNLOADERS
 	for index := range options.ConcurrentEncodings * 2 {
 		go downloader.Start(index, downloadQueue, encodeQueue, filePool, options)
@@ -40,16 +48,10 @@ func main() {
 		go encoder.Start(index, encodeQueue, uploadQueue, filePool, options)
 	}
 
-	// START UPLOADERS
-	go uploader.Start(0, uploadQueue, options) // just one for testing
-
-	// START INPUT METHODS
-	if options.UseTerminal {
-		go cli.Start(downloadQueue)
-	}
-	if options.UseREST {
-		go rest.Start(downloadQueue, ":8080")
-	}
+	// START UPLOADER
+	// Uploader manages concurrency inside
+	// Do not start more than 1 uploader
+	go uploader.Start(0, uploadQueue, options)
 
 	for {
 		var quit string
