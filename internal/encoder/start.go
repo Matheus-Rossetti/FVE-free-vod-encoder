@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
@@ -11,11 +12,13 @@ import (
 func Start(workerId int, encodeQueue <-chan *core.Job, uploadQueue chan<- *core.Job, filePool chan<- *os.File, options *core.Options) {
 	for job := range encodeQueue {
 		fmt.Printf("Encode worker %v received %v\n", workerId, job.EncodeJob.AbsoluteVideoPath)
+		outputDir := createOutputDir()
 
-		video := NewVideo(job.EncodeJob.AbsoluteVideoPath)
+		absoluteVideoPath, _ := filepath.Abs(job.EncodeJob.File.Name())
+
+		video := NewVideo(absoluteVideoPath)
 		cmd := BuildFFmpegCommand(video, options)
 
-		outputDir := createOutputDir()
 		// FFmpeg runs as a low-priority process, it will use 100% CPU but won't freeze the system
 		cmd.Dir = outputDir
 		output, err := cmd.CombinedOutput()

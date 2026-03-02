@@ -3,7 +3,6 @@ package downloader
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
@@ -18,7 +17,6 @@ func Start(id int, downloadQueue <-chan *core.Job, encodeQueue chan<- *core.Job,
 		file.Seek(0, 0)  // 'Go' to the beginning of the file
 		DownloadToFile(job.DownloadJob.VideoUri, file)
 
-		job.EncodeJob.AbsoluteVideoPath, _ = filepath.Abs(file.Name())
 		job.EncodeJob.File = file
 		encodeQueue <- job
 	}

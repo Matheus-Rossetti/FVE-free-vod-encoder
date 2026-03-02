@@ -11,7 +11,6 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
 	"github.com/Matheus-Rossetti/frevod/internal/uploader"
-	"github.com/Matheus-Rossetti/frevod/internal/workspace"
 )
 
 func main() {
@@ -25,11 +24,6 @@ func main() {
 	encodeQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
 	uploadQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
 
-	videoSlot := workspace.Prepare(options)
-	for _, file := range videoSlot {
-		filePool <- file
-	}
-
 	// START INPUT METHODS
 	if options.Input.UseTerminal {
 		go cli.Start(downloadQueue)
@@ -39,6 +33,10 @@ func main() {
 	}
 
 	// START DOWNLOADERS
+	files := downloader.PrepareStorageFiles(options)
+	for _, file := range files { // fill pool
+		filePool <- file
+	}
 	for index := range options.Encode.ConcurrentEncodings * 2 {
 		go downloader.Start(index, downloadQueue, encodeQueue, filePool, options)
 	}
@@ -57,7 +55,7 @@ func main() {
 		var quit string
 		fmt.Scanln(quit)
 		if quit == "q" {
-			for _, file := range videoSlot {
+			for _, file := range files {
 				file.Close()
 			}
 			break
