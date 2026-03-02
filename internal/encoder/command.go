@@ -3,10 +3,8 @@ package encoder
 import (
 	"fmt"
 	"os/exec"
-	"runtime"
 	"slices"
 	"strings"
-	"syscall"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
@@ -24,7 +22,7 @@ func BuildFFmpegCommand(video *Video, options *core.Options) *exec.Cmd {
 	input := []string{"-i", video.Source}
 	filterComplex := buildFilterComplex(video)
 	videoMaps := buildVideoMaps(video) // h.264
-	audioMaps := buildAudioMaps(video) // aac | maybe switch to opus, heard sounds better at the same bitrate and handle 5.1 sound
+	audioMaps := buildAudioMaps(video) // aac | maybe switch to opus, heard it sounds better at the same bitrate and handle 5.1 sound
 	keyFramesAndQuality := getKeyFramesAndQuality()
 	hlsOptions := buildHlsOptions(video)
 
@@ -200,29 +198,6 @@ func buildHlsOptions(video *Video) []string {
 		"-hls_segment_filename", segmentPattern, // name and dir for hls segments
 		playlistPath, // name and dir for hls playlist
 	}
-}
-
-func BuildForLowPrioExecution(ffmpegArgs []string) *exec.Cmd {
-	// ------ SET LOW PRIO PROCESS FOR UNIX BASED ------
-	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
-
-		// Use nice to set low prio
-		args := append([]string{"-n", "10", "ffmpeg"}, ffmpegArgs...)
-		return exec.Command("nice", args...)
-	}
-
-	cmd := exec.Command("ffmpeg", ffmpegArgs...)
-
-	// ------ SET LOW PRIO PROCESS FOR WINDOWS ------
-	if runtime.GOOS == "windows" {
-		const MICROSOFT_MAGIC_CONSTANT_THAT_STARTS_LOW_PRIORITY_PROCESSES = 0x00004000
-
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			CreationFlags: MICROSOFT_MAGIC_CONSTANT_THAT_STARTS_LOW_PRIORITY_PROCESSES,
-		}
-	}
-
-	return cmd
 }
 
 /* args := []string{

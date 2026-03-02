@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o meu-app .
+RUN CGO_ENABLED=0 GOOS=linux go build -o frevod ./src/
 
 
 FROM debian:bookworm-slim
@@ -23,6 +23,6 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=builder /app/meu-app .
+COPY --from=builder /app/frevod .
 
 CMD ["./frevod"]
