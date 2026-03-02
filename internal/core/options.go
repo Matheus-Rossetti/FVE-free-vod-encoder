@@ -4,46 +4,46 @@ type Options struct {
 	ExposeMetrics bool
 
 	// input
-	Input InputOptions `yaml:"input"`
+	Input InputOptions `mapstructure:"input"`
 
 	// encode
-	Encode EncodeOptions `yaml:"encode"`
+	Encode EncodeOptions `mapstructure:"encode"`
 
 	// upload
-	Upload UploadOptions `yaml:"upload"`
+	Upload UploadOptions `mapstructure:"upload"`
 }
 
 type InputOptions struct {
-	UseTerminal bool `yaml:"use_terminal"`
-	UseREST     bool `yaml:"use_rest"`
+	UseTerminal bool `mapstructure:"use_terminal"`
+	UseREST     bool `mapstructure:"use_rest"`
 	// UseRabbitMQ bool
 	// UseKafka    bool
 	// UseGRPC     bool
 }
 
 type EncodeOptions struct {
-	Codec               string `yaml:"codec"`
-	SegmentType         string `yaml:"segment_type"`
-	SegmentDuration     int    `yaml:"segment_duration"`
-	ConcurrentEncodings int    `yaml:"concurrent_encodings"`
-	OutputFFmpegCommand bool   `yaml:"output_ffmpeg_command"`
+	Codec               string `mapstructure:"codec"`
+	SegmentType         string `mapstructure:"segment_type"`
+	SegmentDuration     int    `mapstructure:"segment_duration"`
+	ConcurrentEncodings int    `mapstructure:"concurrent_encodings"`
+	OutputFFmpegCommand bool   `mapstructure:"output_ffmpeg_command"`
 }
 
 type UploadOptions struct {
-	S3 AmazonS3Options `yaml:"s3"`
+	S3 AmazonS3Options `mapstructure:"s3"`
 	// UseAzureBlob    AzureBlobStorage
 	// UseCloudStorage GoogleCloudStorage
-	StoreLocal string `yaml:"store_local"`
+	StoreLocal string `mapstructure:"store_local"`
 
-	ConcurrentUploads int `yaml:"concurrent_uploads"`
+	ConcurrentUploads int `mapstructure:"concurrent_uploads"`
 }
 
 type AmazonS3Options struct {
-	Use               bool   `yaml:"use"`
-	S3Endpoint        string `yaml:"s3_endpoint"`
-	S3AccessKey       string `yaml:"s3_access_key"`
-	S3SecretAccessKey string `yaml:"s3_secret_key"`
-	S3UseSSL          bool   `yaml:"s3_use_ssl"`
+	Use               bool   `mapstructure:"use"`
+	S3Endpoint        string `mapstructure:"s3_endpoint"`
+	S3AccessKey       string `mapstructure:"s3_access_key"`
+	S3SecretAccessKey string `mapstructure:"s3_secret_key"`
+	S3UseSSL          bool   `mapstructure:"s3_use_ssl"`
 }
 
 type AzureBlobStorageOptions struct {

@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"go.yaml.in/yaml/v4"
-
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func ParseOptions() *core.Options {
-
 	fmt.Println("Parsing options...")
 
 	// Standard options
@@ -36,16 +33,11 @@ func ParseOptions() *core.Options {
 		},
 	}
 
-	// try to get options from config.yml
-	found, config := GetOptionsFromFile()
-	if found {
-		log.Println("Found config file.")
-		yaml.Unmarshal(config, options)
+	if IsRunningInDocker() {
 		return options
 	}
 
-	// get config from env vars
-
-	log.Println("Config file not found, using standard options.")
+	log.Println("config.yml file not found, using standard options.")
 	return options
+
 }
