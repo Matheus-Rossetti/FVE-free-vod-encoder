@@ -12,7 +12,7 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-func Start(id int, uploadQueue <-chan *core.Job, options *core.Options) {
+func Start(uploadQueue <-chan *core.Job, options *core.Options) {
 
 	// START CONNECTIONS
 	var ctx context.Context

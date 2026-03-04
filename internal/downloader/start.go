@@ -21,35 +21,24 @@ func Start(
 	// for something from the downloadQueue only,
 	// it will stay stuck there and never
 	// shut down, even if done is closed
-	for {
-		select {
-		case <-ctx.Done():
-			fmt.Printf("Downloader %v shutting down...\n", id)
-			return
+	for job := range downloadQueue {
+		file := <-filePool // file is returned to the pool by the encoder after it's done encoding said file
 
-		default:
+		fmt.Printf("Download worker %v received %v from %v\n", id, job.DownloadJob.VideoUri, job.DownloadJob.Source)
+
+		file.Truncate(0) // Clean the file without deleting it
+		file.Seek(0, 0)  // 'Go' to the beginning of the file
+		err := DownloadToFile(ctx, job.DownloadJob.VideoUri, file)
+		if err != nil {
+			filePool <- file
+			break
 		}
 
-		select {
-		case <-ctx.Done():
-			fmt.Printf("Downloader %v shutting down...\n", id)
-			return
+		job.EncodeJob.File = file
+		encodeQueue <- job
 
-		case job := <-downloadQueue:
-			file := <-filePool // file is returned to the pool by the encoder after it's done encoding said file
-
-			fmt.Printf("Download worker %v received %v from %v\n", id, job.DownloadJob.VideoUri, job.DownloadJob.Source)
-
-			file.Truncate(0) // Clean the file without deleting it
-			file.Seek(0, 0)  // 'Go' to the beginning of the file
-			err := DownloadToFile(ctx, job.DownloadJob.VideoUri, file)
-			if err != nil {
-				filePool <- file
-				break
-			}
-
-			job.EncodeJob.File = file
-			encodeQueue <- job
-		}
 	}
+
+	// After queue closes
+	fmt.Printf("\nDownloader %v shutting down...", id)
 }

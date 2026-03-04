@@ -17,46 +17,32 @@ func Start(
 	encodeQueue <-chan *core.Job,
 	uploadQueue chan<- *core.Job,
 ) {
-	for {
+	for job := range encodeQueue {
+		fmt.Printf("Encode worker %v received %v\n", id, job.EncodeJob.AbsoluteVideoPath)
+		outputDir := createOutputDir()
 
-		select {
-		case <-ctx.Done():
-			fmt.Printf("\nEncode %v shuting down...", id)
-			return
+		absoluteVideoPath, _ := filepath.Abs(job.EncodeJob.File.Name())
 
-		default:
+		video := NewVideo(absoluteVideoPath)
+		cmd := BuildFFmpegCommand(ctx, options, video)
+
+		cmd.Dir = outputDir
+		err := cmd.Run()
+		if err != nil {
+			fmt.Printf("error while running the command: %v\nDeleting: %v", err, outputDir)
+			os.RemoveAll(outputDir)
+			filePool <- job.EncodeJob.File
+			break
 		}
 
-		select {
-		case <-ctx.Done():
-			fmt.Printf("\nEncode %v shuting down...\n", id)
-			return
+		filePool <- job.EncodeJob.File // return the file to the pool
 
-		case job := <-encodeQueue:
-			fmt.Printf("Encode worker %v received %v\n", id, job.EncodeJob.AbsoluteVideoPath)
-			outputDir := createOutputDir()
+		job.UploadJob.Dir = outputDir
+		uploadQueue <- job
 
-			absoluteVideoPath, _ := filepath.Abs(job.EncodeJob.File.Name())
-
-			video := NewVideo(absoluteVideoPath)
-			cmd := BuildFFmpegCommand(ctx, options, video)
-
-			cmd.Dir = outputDir
-			err := cmd.Run()
-			if err != nil {
-				fmt.Printf("error while running the command: %v\nDeleting: %v", err, outputDir)
-				os.RemoveAll(outputDir)
-				filePool <- job.EncodeJob.File
-				break
-			}
-
-			filePool <- job.EncodeJob.File // return the file to the pool
-
-			job.UploadJob.Dir = outputDir
-			uploadQueue <- job
-
-			fmt.Printf("Job %v concluded!\n", video.Name)
-		}
-
+		fmt.Printf("Job %v concluded!\n", video.Name)
 	}
+
+	// After queue closes
+	fmt.Printf("\nEncode %v shuting down...", id)
 }
