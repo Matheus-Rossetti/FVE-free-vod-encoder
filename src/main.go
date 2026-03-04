@@ -1,8 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/downloader"
@@ -19,7 +22,11 @@ func main() {
 	options := options.ParseOptions()
 	core.Greet()
 
-	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	var wg sync.WaitGroup
+
+	// MAKE QUEUES
 	downloadQueue := make(chan *core.Job, 999)
 	encodeQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
 	uploadQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
@@ -32,18 +39,27 @@ func main() {
 		go rest.Start(downloadQueue, ":8080")
 	}
 
+	// START FILE POOL (used by downloader and encoder)
+	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
+	files := core.PrepareStorageFiles(options)
+	core.FillFilePool(files, filePool)
+
 	// START DOWNLOADERS
-	files := downloader.PrepareStorageFiles(options)
-	for _, file := range files { // fill pool
-		filePool <- file
-	}
 	for index := range options.Encode.ConcurrentEncodings * 2 {
-		go downloader.Start(index, downloadQueue, encodeQueue, filePool, options)
+		wg.Add(1)
+		go func() {
+			downloader.Start(ctx, options, filePool, index, downloadQueue, encodeQueue)
+			wg.Done()
+		}()
 	}
 
 	// START ENCODERS
 	for index := range options.Encode.ConcurrentEncodings {
-		go encoder.Start(index, encodeQueue, uploadQueue, filePool, options)
+		wg.Add(1)
+		go func() {
+			encoder.Start(ctx, options, filePool, index, encodeQueue, uploadQueue)
+			wg.Done()
+		}()
 	}
 
 	// START UPLOADER
@@ -51,14 +67,8 @@ func main() {
 	// Do not start more than 1 uploader
 	go uploader.Start(0, uploadQueue, options)
 
-	for {
-		var quit string
-		fmt.Scanln(quit)
-		if quit == "q" {
-			for _, file := range files {
-				file.Close()
-			}
-			break
-		}
-	}
+	// Shutdown
+	wg.Wait()
+	close(filePool)
+	core.CloseAndDeleteStorageFiles(filePool)
 }

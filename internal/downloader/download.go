@@ -1,6 +1,8 @@
 package downloader
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -8,7 +10,7 @@ import (
 	"strings"
 )
 
-func DownloadToFile(url string, file *os.File) {
+func DownloadToFile(ctx context.Context, url string, file *os.File) error {
 
 	// Check if it's a video
 	fyleType := checkFileType(url)
@@ -16,18 +18,30 @@ func DownloadToFile(url string, file *os.File) {
 		log.Fatal("Expected URL to download a video file. Got URL to download: ", fyleType)
 	}
 
-	// Connect to server
-	request, err := http.Get(url)
+	// Create request
+	request, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		log.Fatal("Error during get request to download video", err)
+		log.Fatal("Error creating request to download video", err)
 	}
-	defer request.Body.Close()
+
+	// Execute request
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		log.Fatal("Error executing the request to download video", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("Request returned %v status", response.Status)
+	}
 
 	// Download into the file
-	_, err = io.Copy(file, request.Body)
+	_, err = io.Copy(file, response.Body)
 	if err != nil {
-		log.Fatal("Error storing body stream into file", err)
+		fmt.Printf("Stoped copying stream into file")
+		return err
 	}
+	return nil
 }
 
 // Downloads the first 512 bytes (or less) and check fileType
