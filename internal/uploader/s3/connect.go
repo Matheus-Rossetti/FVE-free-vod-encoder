@@ -1,7 +1,6 @@
 package s3
 
 import (
-	"context"
 	"log"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
@@ -9,9 +8,8 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-func Connect(options *core.Options) (context.Context, *minio.Client) {
+func Connect(options *core.Options) *minio.Client {
 
-	ctx := context.Background()
 	endpoint := options.Upload.S3.S3Endpoint
 	accessKeyID := options.Upload.S3.S3AccessKey
 	secretAccessKey := options.Upload.S3.S3SecretAccessKey
@@ -26,5 +24,5 @@ func Connect(options *core.Options) (context.Context, *minio.Client) {
 		log.Fatalln(err)
 	}
 
-	return ctx, client
+	return client
 }

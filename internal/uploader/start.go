@@ -12,13 +12,12 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-func Start(uploadQueue <-chan *core.Job, options *core.Options) {
+func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job) {
 
 	// START CONNECTIONS
-	var ctx context.Context
 	var client *minio.Client
 	if options.Upload.S3.Use {
-		ctx, client = s3.Connect(options)
+		client = s3.Connect(options)
 	}
 
 	// CREATE POOL
@@ -42,17 +41,19 @@ func Start(uploadQueue <-chan *core.Job, options *core.Options) {
 					return nil
 				}
 
-				<-uploadPool // takes a file to upload
-				wg.Add(1)
+				<-uploadPool
 
 				if options.Upload.S3.Use {
-
+					wg.Add(1)
 					go func() {
-						defer wg.Done()
 						s3_key := s3.GetKey(job, path)
 						absolutePath, _ := filepath.Abs(path)
-						// the upload will aways return a struct back to the pool
-						s3.UploadFiles(client, s3_key, ctx, absolutePath, uploadPool)
+						err := s3.UploadFiles(ctx, client, s3_key, absolutePath)
+						if err != nil {
+
+						}
+						uploadPool <- struct{}{}
+						wg.Done()
 					}()
 
 				}
@@ -66,7 +67,8 @@ func Start(uploadQueue <-chan *core.Job, options *core.Options) {
 		fmt.Printf("\nDeleting ROT files...")
 		go DeleteROT(job.UploadJob.Dir)
 		fmt.Printf("\nDir %v deleted!", job.UploadJob.Dir)
-
-		// loop
 	}
+
+	// After queue closes
+	fmt.Printf("\nUploader shuting down...")
 }

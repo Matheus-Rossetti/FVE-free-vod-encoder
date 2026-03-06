@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,6 +13,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
+	"github.com/Matheus-Rossetti/frevod/internal/uploader"
 )
 
 func main() {
@@ -30,16 +30,11 @@ func main() {
 	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
 	go func() {
-
 		<-ctx.Done()
-		fmt.Println("Closing download queue!")
 		close(downloadQueue)
-
-		fmt.Println("Closing encode queue!")
 		close(encodeQueue)
-
-		fmt.Println("Closing upload queue!")
 		close(uploadQueue)
 	}()
 
@@ -47,10 +42,14 @@ func main() {
 
 	// START INPUT METHODS
 	if options.Input.UseTerminal {
-		go cli.Start(downloadQueue)
+		go cli.Start(ctx, downloadQueue)
 	}
 	if options.Input.UseREST {
-		go rest.Start(downloadQueue, ":8080")
+		wg.Add(1)
+		go func() {
+			rest.Start(ctx, downloadQueue, ":8080")
+			wg.Done()
+		}()
 	}
 
 	// START FILE POOL (used by downloader and encoder)
@@ -79,7 +78,11 @@ func main() {
 	// START UPLOADER
 	// Uploader manages concurrency inside
 	// Do not start more than 1 uploader
-	// go uploader.Start(uploadQueue, options)
+	wg.Add(1)
+	go func() {
+		uploader.Start(uploadQueue, options)
+		wg.Done()
+	}()
 
 	// Shutdown
 	wg.Wait()
