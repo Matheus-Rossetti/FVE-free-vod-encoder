@@ -8,7 +8,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-func Connect(options *core.Options) *minio.Client {
+func CreateClient(options *core.Options) *minio.Client {
 
 	endpoint := options.Upload.S3.S3Endpoint
 	accessKeyID := options.Upload.S3.S3AccessKey

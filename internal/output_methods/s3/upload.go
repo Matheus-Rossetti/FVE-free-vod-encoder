@@ -7,7 +7,7 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-func UploadFiles(ctx context.Context, client *minio.Client, key string, path string) error {
+func (s *S3) Upload(ctx context.Context, client *minio.Client) {
 
 	bucketName := "videos"
 
@@ -19,8 +19,7 @@ func UploadFiles(ctx context.Context, client *minio.Client, key string, path str
 		minio.PutObjectOptions{ContentType: "video/mp4"},
 	)
 	if err != nil {
-		fmt.Println("Error uploading files:", err)
-		return err
+		return fmt.Errorf("Error uploading files:", err)
 	}
 
 	fmt.Printf("Successfully uploaded %s of size %d\n", key, info.Size)

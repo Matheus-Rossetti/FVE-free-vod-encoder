@@ -8,27 +8,19 @@ import (
 	"sync"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-	"github.com/Matheus-Rossetti/frevod/internal/uploader/s3"
-	"github.com/minio/minio-go/v7"
 )
 
-func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job) {
-
-	// START CONNECTIONS
-	var client *minio.Client
-	if options.Upload.S3.Use {
-		client = s3.Connect(options)
-	}
-
-	// CREATE POOL
-	uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
-	for range options.Upload.ConcurrentUploads {
-		uploadPool <- struct{}{}
-	}
+func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job, storageProviders ...StorageProvider) {
 
 	for job := range uploadQueue {
-		var wg sync.WaitGroup
 
+		// CREATE UPLOAD POOL
+		uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
+		for range options.Upload.ConcurrentUploads {
+			uploadPool <- struct{}{}
+		}
+
+		var wg sync.WaitGroup
 		filepath.WalkDir(
 			job.UploadJob.Dir,
 			func(path string, entry fs.DirEntry, err error) error {
@@ -41,21 +33,8 @@ func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.
 					return nil
 				}
 
-				<-uploadPool
-
-				if options.Upload.S3.Use {
-					wg.Add(1)
-					go func() {
-						s3_key := s3.GetKey(job, path)
-						absolutePath, _ := filepath.Abs(path)
-						err := s3.UploadFiles(ctx, client, s3_key, absolutePath)
-						if err != nil {
-
-						}
-						uploadPool <- struct{}{}
-						wg.Done()
-					}()
-
+				for _, provider := range storageProviders {
+					provider.Upload(ctx, options, job)
 				}
 
 				return nil
