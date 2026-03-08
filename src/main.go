@@ -43,29 +43,17 @@ func main() {
 
 	// START INPUT METHODS
 	if options.Input.UseTerminal {
-		wg.Add(1)
-		go func() {
-			cli.Start(ctx, downloadQueue)
-			wg.Done()
-		}()
+		go cli.Start(ctx, downloadQueue)
 	}
 	if options.Input.UseREST {
-		wg.Add(1)
-		go func() {
-			rest.Start(ctx, downloadQueue, ":8080")
-			wg.Done()
-		}()
+		go rest.Start(ctx, downloadQueue, ":8080")
 	}
 
 	// START OUTPUT METHODS
-	var outputMethods []uploader.UploadMethod
+	storageProviders := make(map[string]uploader.StorageProvider)
 	if options.Upload.S3.Use {
-		wg.Add(1)
-		outputMethods = append(outputMethods, s3.S3{})
-		go func() {
-			s3.Start(options)
-			wg.Done()
-		}()
+		provider := s3.Start(options)
+		storageProviders["s3"] = provider
 	}
 
 	// START FILE POOL (used by downloader and encoder)
@@ -85,21 +73,16 @@ func main() {
 	// START ENCODERS
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Add(1)
-
 		go func() {
 			encoder.Start(ctx, options, filePool, index, encodeQueue, uploadQueue)
 			wg.Done()
 		}()
 	}
 
-	// START UPLOADER
-	// Uploader manages concurrency inside
-	// Do not start more than 1 uploader
-	wg.Add(1)
-	go func() {
-		uploader.Start(ctx, options, uploadQueue)
-		wg.Done()
-	}()
+	// START UPLOAD
+	for range options.Encode.ConcurrentEncodings {
+		go uploader.Start(ctx, options, uploadQueue, storageProviders)
+	}
 
 	// Shutdown
 	wg.Wait()

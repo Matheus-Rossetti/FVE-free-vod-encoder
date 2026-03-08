@@ -28,10 +28,15 @@ func ParseOptions() *core.Options {
 
 		Upload: core.UploadOptions{
 			S3: core.AmazonS3Options{
-				Use:      true,
-				S3UseSSL: true,
+				S3Endpoint:        "",
+				S3AccessKey:       "",
+				S3SecretAccessKey: "",
+				S3BucketName:      "videos",
+				Use:               true,
+				S3UseSSL:          true,
 			},
-			StoreLocal: "",
+			StoreLocal:        "",
+			ConcurrentUploads: 10,
 		},
 	}
 

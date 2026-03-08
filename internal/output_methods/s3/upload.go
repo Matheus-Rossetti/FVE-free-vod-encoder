@@ -3,23 +3,29 @@ package s3
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/minio/minio-go/v7"
 )
 
-func (s *S3) Upload(ctx context.Context, client *minio.Client) {
+func (s *S3) Upload(ctx context.Context, job *core.Job, path string) error {
 
-	bucketName := "videos"
+	fmt.Printf("\nUploading %v..", path)
 
-	info, err := client.FPutObject(
+	key := GetKey(job, path)
+	absolutePath, _ := filepath.Abs(path)
+
+	info, err := s.Client.FPutObject(
 		ctx,
-		bucketName,
+		s.Bucket,
 		key,
-		path,
+		absolutePath,
 		minio.PutObjectOptions{ContentType: "video/mp4"},
 	)
 	if err != nil {
-		return fmt.Errorf("Error uploading files:", err)
+		fmt.Printf("\nError uploading: %v", err)
+		return fmt.Errorf("Error uploading files: %v", err)
 	}
 
 	fmt.Printf("Successfully uploaded %s of size %d\n", key, info.Size)

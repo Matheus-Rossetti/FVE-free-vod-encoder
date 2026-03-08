@@ -43,6 +43,7 @@ type AmazonS3Options struct {
 	S3Endpoint        string `mapstructure:"s3_endpoint"`
 	S3AccessKey       string `mapstructure:"s3_access_key"`
 	S3SecretAccessKey string `mapstructure:"s3_secret_key"`
+	S3BucketName      string `mapstructure:"s3_bucket_name"`
 	S3UseSSL          bool   `mapstructure:"s3_use_ssl"`
 }
 

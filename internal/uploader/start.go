@@ -10,9 +10,10 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job, storageProviders ...StorageProvider) {
+func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job, storageProviders map[string]StorageProvider) {
 
 	for job := range uploadQueue {
+		fmt.Printf("\nUploader received %v to upload", job.UploadJob.Dir)
 
 		// CREATE UPLOAD POOL
 		uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
@@ -21,29 +22,45 @@ func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.
 		}
 
 		var wg sync.WaitGroup
-		filepath.WalkDir(
-			job.UploadJob.Dir,
-			func(path string, entry fs.DirEntry, err error) error {
 
-				if err != nil {
-					return err
-				}
+		for _, provider := range storageProviders {
+			fmt.Println("\nUploading to S3...")
 
-				if entry.IsDir() {
+			filepath.WalkDir(
+				job.UploadJob.Dir,
+				func(path string, entry fs.DirEntry, err error) error {
+
+					if err != nil {
+						return err
+					}
+
+					if entry.IsDir() {
+						return nil
+					}
+
+					fmt.Printf("\nTook one from the pool: %v", len(uploadPool))
+					<-uploadPool
+					fmt.Printf("\nTook one from the pool: %v", len(uploadPool))
+					wg.Add(1)
+					go func() error {
+						defer func() { uploadPool <- struct{}{}; wg.Done() }()
+						err = provider.Upload(ctx, job, path)
+						if err != nil {
+							provider.HandleError()
+							return err
+						}
+
+						return nil
+					}()
+
 					return nil
-				}
-
-				for _, provider := range storageProviders {
-					provider.Upload(ctx, options, job)
-				}
-
-				return nil
-			}) // walkdir finishline
+				}) // walkdir finishline
+		}
 
 		wg.Wait()
 
 		fmt.Printf("\nFinished uploading!")
-		fmt.Printf("\nDeleting ROT files...")
+		fmt.Printf("\nDeleting local ROT files...")
 		go DeleteROT(job.UploadJob.Dir)
 		fmt.Printf("\nDir %v deleted!", job.UploadJob.Dir)
 	}
