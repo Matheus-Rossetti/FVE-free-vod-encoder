@@ -9,7 +9,7 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-func (s *S3) Upload(ctx context.Context, job *core.Job, path string) error {
+func (s *S3) Upload(ctx context.Context, job *core.Job, path string) (string, error) {
 
 	fmt.Printf("\nUploading %v..", path)
 
@@ -25,9 +25,9 @@ func (s *S3) Upload(ctx context.Context, job *core.Job, path string) error {
 	)
 	if err != nil {
 		fmt.Printf("\nError uploading: %v", err)
-		return fmt.Errorf("Error uploading files: %v", err)
+		return key, fmt.Errorf("Error uploading files: %v", err)
 	}
 
-	fmt.Printf("Successfully uploaded %s of size %d\n", key, info.Size)
-	return nil
+	fmt.Printf("\nSuccessfully uploaded %s of size %d", key, info.Size)
+	return key, nil
 }

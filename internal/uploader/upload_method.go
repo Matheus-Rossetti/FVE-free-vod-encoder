@@ -7,6 +7,6 @@ import (
 )
 
 type StorageProvider interface {
-	Upload(context.Context, *core.Job, string) error
-	HandleError()
+	Upload(context.Context, *core.Job, string) (string, error)
+	HandleError([]string)
 }

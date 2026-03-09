@@ -81,7 +81,11 @@ func main() {
 
 	// START UPLOAD
 	for range options.Encode.ConcurrentEncodings {
-		go uploader.Start(ctx, options, uploadQueue, storageProviders)
+		wg.Add(1)
+		go func() {
+			uploader.Start(ctx, options, uploadQueue, storageProviders)
+			wg.Done()
+		}()
 	}
 
 	// Shutdown
