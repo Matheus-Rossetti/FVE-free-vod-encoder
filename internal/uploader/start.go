@@ -48,7 +48,7 @@ func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.
 					wg.Add(1)
 					go func() error {
 						defer func() { uploadPool <- struct{}{}; wg.Done() }()
-						key, err := provider.Upload(ctx, job, path)
+						key, err := provider.Upload(providerContext, job, path)
 						if err != nil {
 							cancel() // stops the walkdir
 						}
@@ -66,6 +66,7 @@ func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.
 			wg.Wait() // finishes uploading to one provider before starting another
 
 			if providerContext.Err() != nil { // canceling the original ctx (using ctrl + c) will also cancel the providerContext
+				fmt.Printf("\n uploadedFiles: %v", uploadedFiles)
 				provider.HandleError(uploadedFiles)
 			}
 
