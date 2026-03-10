@@ -46,7 +46,11 @@ func main() {
 		go cli.Start(ctx, downloadQueue)
 	}
 	if options.Input.UseREST {
-		go rest.Start(ctx, downloadQueue, ":8080")
+		wg.Add(1)
+		go func() {
+			rest.Start(ctx, downloadQueue, ":8080")
+			wg.Done()
+		}()
 	}
 
 	// START OUTPUT METHODS
