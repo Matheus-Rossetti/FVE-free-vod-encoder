@@ -33,7 +33,7 @@ func Run(downloadQueue chan<- *core.Job) {
 		job.DownloadJob.UriType = uriType
 		job.DownloadJob.VideoUri = videoUri
 
-		job.UploadJob.S3KeyStarter = "videotest/"
+		job.UploadJob.S3KeyStarter = "from-local-path"
 
 		downloadQueue <- job
 	}

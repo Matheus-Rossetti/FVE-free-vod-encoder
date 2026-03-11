@@ -41,7 +41,7 @@ func ParseOptions() *core.Options {
 			},
 			Local: core.LocalOption{
 				Use:     true,
-				StoreAt: "/home/matheusrossetti/",
+				StoreAt: "/home/matheusrossetti/segmented-videos",
 			},
 			ConcurrentUploads: 10,
 		},
