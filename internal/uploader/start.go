@@ -11,10 +11,10 @@ import (
 )
 
 // This function is getting messier by de day, refactor or be ashamed.
-func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.Job, storageProviders map[string]StorageProvider) {
+func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-chan *core.Job, storageProviders map[string]StorageProvider) {
 
 	for job := range uploadQueue {
-		fmt.Printf("\nUploader received %v to upload", job.UploadJob.Dir)
+		fmt.Printf("\nUploader %v received %v to upload", id, job.UploadJob.Dir)
 
 		// CREATE UPLOAD POOL
 		uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
@@ -79,5 +79,5 @@ func Start(ctx context.Context, options *core.Options, uploadQueue <-chan *core.
 	}
 
 	// After queue closes
-	fmt.Printf("\nUploader shuting down...")
+	fmt.Printf("\nUploader %v shuting down...", id)
 }

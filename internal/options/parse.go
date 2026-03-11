@@ -11,6 +11,10 @@ import (
 func ParseOptions() *core.Options {
 	fmt.Println("Parsing options...")
 
+	// TODO If config.yml file isn't found, or is malformed
+	// get options from charm's Huh lib (terminal form)
+	// add option to save that config into a config.yml
+
 	// Standard options
 	options := &core.Options{
 		Input: core.InputOptions{
@@ -32,7 +36,7 @@ func ParseOptions() *core.Options {
 				S3AccessKey:       "",
 				S3SecretAccessKey: "",
 				S3BucketName:      "videos",
-				Use:               true,
+				Use:               false,
 				S3UseSSL:          true,
 			},
 			StoreLocal:        "",

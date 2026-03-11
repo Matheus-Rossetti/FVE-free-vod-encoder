@@ -7,5 +7,6 @@ import (
 )
 
 func AddRoutes(mux *http.ServeMux, downloadQueue chan<- *core.Job) {
+	mux.HandleFunc("GET /", checkHealth)
 	mux.HandleFunc("POST /encode", videoHandler(downloadQueue))
 }

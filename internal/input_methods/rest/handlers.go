@@ -12,7 +12,7 @@ func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var request struct {
-			VideoUrl     string `json:"video_url"`
+			VideoUri     string `json:"video_url"`
 			UploadMethod string `json:"upload_method"`
 			S3KeyStarter string `json:"s3_key_starter"`
 		}
@@ -23,7 +23,7 @@ func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
 			return
 		}
 
-		if request.VideoUrl == "" {
+		if request.VideoUri == "" {
 			http.Error(w, "Package needs 'video_url'", http.StatusUnprocessableEntity)
 			return
 		}
@@ -33,13 +33,17 @@ func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
 		job := core.NewJob()
 
 		job.DownloadJob.Source = "REST"
-		job.DownloadJob.VideoUri = request.VideoUrl
+		job.DownloadJob.VideoUri = request.VideoUri
 		job.DownloadJob.UploadMethod = request.UploadMethod
 
 		job.UploadJob.S3KeyStarter = request.S3KeyStarter
 
 		downloadQueue <- job
 
-		fmt.Fprintf(w, "Video {video.name} added to internal queue and will be processed soon!")
+		fmt.Fprintf(w, "Video %v added to internal queue and will be processed soon!", request.VideoUri)
 	})
+}
+
+func checkHealth(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Ok!")
 }

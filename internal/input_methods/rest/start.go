@@ -10,7 +10,7 @@ import (
 )
 
 func Start(ctx context.Context, downloadQueue chan<- *core.Job, port string) {
-	fmt.Printf("\nStarting REST input method in port %v\n", port)
+	fmt.Printf("\nStarting REST input method at http://localhost:%v\n", port)
 
 	mux := http.NewServeMux()
 	AddRoutes(mux, downloadQueue)
@@ -20,11 +20,18 @@ func Start(ctx context.Context, downloadQueue chan<- *core.Job, port string) {
 		Handler: mux,
 	}
 
-	go server.ListenAndServe()
+	go server.ListenAndServe() // Start server
 
-	<-ctx.Done()
+	<-ctx.Done() // Waits for term or int signal
+	fmt.Printf("\nREST input method shutting down...")
 
 	serverCtx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
-	server.Shutdown(serverCtx)
+
+	err := server.Shutdown(serverCtx)
+	if err != nil {
+		fmt.Printf("\nError shutting down REST input method: %v", err)
+		return
+	}
+
 }

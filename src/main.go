@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -30,10 +31,10 @@ func main() {
 
 	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	go func() {
 		<-ctx.Done()
+		fmt.Printf("\nShutdown signal received!")
 		close(downloadQueue)
 		close(encodeQueue)
 		close(uploadQueue)
@@ -84,10 +85,10 @@ func main() {
 	}
 
 	// START UPLOAD
-	for range options.Encode.ConcurrentEncodings {
+	for index := range options.Encode.ConcurrentEncodings {
 		wg.Add(1)
 		go func() {
-			uploader.Start(ctx, options, uploadQueue, storageProviders)
+			uploader.Start(ctx, options, index, uploadQueue, storageProviders)
 			wg.Done()
 		}()
 	}
@@ -96,4 +97,5 @@ func main() {
 	wg.Wait()
 	close(filePool)
 	core.CloseAndDeleteStorageFiles(filePool)
+	stop()
 }
