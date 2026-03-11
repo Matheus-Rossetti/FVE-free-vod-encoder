@@ -14,6 +14,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
+	"github.com/Matheus-Rossetti/frevod/internal/output_methods/local"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/s3"
 	"github.com/Matheus-Rossetti/frevod/internal/uploader"
 )
@@ -44,7 +45,11 @@ func main() {
 
 	// START INPUT METHODS
 	if options.Input.UseTerminal {
-		go cli.Start(ctx, downloadQueue)
+		wg.Add(1)
+		go func() {
+			cli.Start(ctx, downloadQueue)
+			wg.Done()
+		}()
 	}
 	if options.Input.UseREST {
 		wg.Add(1)
@@ -55,7 +60,11 @@ func main() {
 	}
 
 	// START OUTPUT METHODS
-	storageProviders := make(map[string]uploader.StorageProvider)
+	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start
+	if options.Upload.Local.Use {
+		provider := local.Start(options)
+		storageProviders["local"] = provider
+	}
 	if options.Upload.S3.Use {
 		provider := s3.Start(options)
 		storageProviders["s3"] = provider
@@ -98,4 +107,6 @@ func main() {
 	close(filePool)
 	core.CloseAndDeleteStorageFiles(filePool)
 	stop()
+
+	fmt.Printf("\n\nEverything's clean, bye :)\n")
 }

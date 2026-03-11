@@ -24,7 +24,8 @@ func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-cha
 
 		var wg sync.WaitGroup
 
-		for _, provider := range storageProviders {
+		for name, provider := range storageProviders {
+			fmt.Printf("Uploading to %v", name)
 
 			providerContext, cancel := context.WithCancel(ctx)
 
@@ -37,7 +38,7 @@ func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-cha
 
 					if providerContext.Err() != nil {
 						return providerContext.Err()
-					}
+					} // providerContext is closed when ctrl + c or an error occurs
 
 					if err != nil || entry.IsDir() {
 						return err // if err here is nil, it wont stop .WalkDir
@@ -48,9 +49,13 @@ func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-cha
 					wg.Add(1)
 					go func() error {
 						defer func() { uploadPool <- struct{}{}; wg.Done() }()
-						key, err := provider.Upload(providerContext, job, path)
+						key := getKey(job, path)
+						absolutePath, _ := filepath.Abs(path)
+						err := provider.Upload(providerContext, key, absolutePath)
 						if err != nil {
+							fmt.Printf("\nGot an error when Uploading file: %v", err)
 							cancel() // stops the walkdir
+							return err
 						}
 
 						mu.Lock()

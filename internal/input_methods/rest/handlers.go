@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/Matheus-Rossetti/frevod/internal/input_methods"
 )
 
 func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
@@ -13,7 +14,6 @@ func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
 
 		var request struct {
 			VideoUri     string `json:"video_url"`
-			UploadMethod string `json:"upload_method"`
 			S3KeyStarter string `json:"s3_key_starter"`
 		}
 
@@ -28,13 +28,18 @@ func videoHandler(downloadQueue chan<- *core.Job) http.HandlerFunc {
 			return
 		}
 
+		uriType := input_methods.CategorizeUri(request.VideoUri)
+		if uriType == "unsupported uri" {
+			fmt.Fprintf(w, "Unsupported URI Type\nAccepts: 'http', 'https', 'file' and '/' (local file)")
+		}
+
 		// BUILD JOB, GOTTA REFACTOR
 
 		job := core.NewJob()
 
 		job.DownloadJob.Source = "REST"
+		job.DownloadJob.UriType = uriType
 		job.DownloadJob.VideoUri = request.VideoUri
-		job.DownloadJob.UploadMethod = request.UploadMethod
 
 		job.UploadJob.S3KeyStarter = request.S3KeyStarter
 

@@ -8,6 +8,9 @@ import (
 )
 
 func Start(ctx context.Context, downloadQueue chan<- *core.Job) {
-	fmt.Println("Starting terminal input method...")
-	Run(downloadQueue)
+	fmt.Printf("\nStarting terminal input method...")
+	go Run(downloadQueue)
+
+	<-ctx.Done()
+	shutdownCli()
 }

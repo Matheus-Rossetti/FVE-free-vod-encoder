@@ -18,8 +18,8 @@ func ParseOptions() *core.Options {
 	// Standard options
 	options := &core.Options{
 		Input: core.InputOptions{
-			UseTerminal: false,
-			UseREST:     true,
+			UseTerminal: true,
+			UseREST:     false,
 		},
 
 		Encode: core.EncodeOptions{
@@ -39,7 +39,10 @@ func ParseOptions() *core.Options {
 				Use:               false,
 				S3UseSSL:          true,
 			},
-			StoreLocal:        "",
+			Local: core.LocalOption{
+				Use:     true,
+				StoreAt: "/home/matheusrossetti/",
+			},
 			ConcurrentUploads: 10,
 		},
 	}

@@ -7,4 +7,5 @@ import (
 type EncodeJob struct {
 	AbsoluteVideoPath string
 	File              *os.File
+	DownloadedFile    bool
 }

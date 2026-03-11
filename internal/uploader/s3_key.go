@@ -1,4 +1,4 @@
-package s3
+package uploader
 
 import (
 	"fmt"
@@ -7,11 +7,11 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func GetKey(job *core.Job, filePath string) string {
+func getKey(job *core.Job, filePath string) string {
 	relativePath, _ := filepath.Rel(job.UploadJob.Dir, filePath)
 
 	dir := filepath.Dir(relativePath)
-	filename := filepath.Base((relativePath))
+	filename := filepath.Base(relativePath)
 
 	var s3_key string
 	if dir != "." {

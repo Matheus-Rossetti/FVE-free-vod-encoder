@@ -33,9 +33,14 @@ type UploadOptions struct {
 	S3 AmazonS3Options `mapstructure:"s3"`
 	// UseAzureBlob    AzureBlobStorage
 	// UseCloudStorage GoogleCloudStorage
-	StoreLocal string `mapstructure:"store_local"`
+	Local LocalOption `mapstructure:"local"`
 
 	ConcurrentUploads int `mapstructure:"concurrent_uploads"`
+}
+
+type LocalOption struct {
+	Use     bool   `mapstructure:"use"`
+	StoreAt string `mapstructure:"store_at"`
 }
 
 type AmazonS3Options struct {
