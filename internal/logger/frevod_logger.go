@@ -9,10 +9,10 @@ import (
 	charmLog "github.com/charmbracelet/log"
 )
 
-func App() (*log.Logger, *slog.Logger) {
+func Frevod() (*log.Logger, *slog.Logger) {
 
 	styles := charmLog.DefaultStyles()
-	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#78BC61"))
+	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#91C87E"))
 
 	charmLogger := charmLog.NewWithOptions(
 		os.Stderr,

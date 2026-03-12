@@ -8,7 +8,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Matheus-Rossetti/frevod/internal/app"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
@@ -23,9 +22,9 @@ import (
 
 func main() {
 
-	app := app.NewApp(logger.App())
-	app.CheckForFFmpegBin()
-	app.Greet()
+	frevod := StartFrevod(logger.Frevod())
+	frevod.CheckForFFmpegBin()
+	frevod.Greet()
 
 	options := options.NewOptions(logger.Options())
 	config := options.ParseOptions()
@@ -40,7 +39,7 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
-		fmt.Printf("\nShutdown signal received!")
+		frevod.slog.Info("Shutdown signal received")
 		close(downloadQueue)
 		close(encodeQueue)
 		close(uploadQueue)
@@ -77,8 +76,8 @@ func main() {
 
 	// START FILE POOL (used by downloader and encoder)
 	filePool := make(chan *os.File, config.Encode.ConcurrentEncodings*2)
-	files := app.PrepareStorageFiles(config)
-	app.FillFilePool(files, filePool)
+	files := frevod.PrepareStorageFiles(config)
+	frevod.FillFilePool(files, filePool)
 
 	// START DOWNLOADERS
 	for index := range config.Encode.ConcurrentEncodings * 2 {
@@ -115,7 +114,7 @@ func main() {
 	// Shutdown
 	wg.Wait()
 	close(filePool)
-	app.CloseAndDeleteStorageFiles(filePool)
+	frevod.CloseAndDeleteStorageFiles(filePool)
 	os.RemoveAll("storage_files")
 	stop()
 
