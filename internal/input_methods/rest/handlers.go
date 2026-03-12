@@ -13,7 +13,7 @@ func (rest *rest) videoHandler() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var request struct {
-			VideoUri   string `json:"video_url"`
+			VideoUri   string `json:"video_uri"`
 			KeyStarter string `json:"key_starter"`
 		}
 
@@ -24,7 +24,7 @@ func (rest *rest) videoHandler() http.HandlerFunc {
 		}
 
 		if request.VideoUri == "" || request.KeyStarter == "" {
-			http.Error(w, "Needs 'video_url' and 'key_starter'", http.StatusUnprocessableEntity)
+			http.Error(w, "Needs 'video_uri' and 'key_starter'", http.StatusUnprocessableEntity)
 			return
 		}
 
