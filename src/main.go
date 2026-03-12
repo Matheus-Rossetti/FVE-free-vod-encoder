@@ -61,7 +61,9 @@ func main() {
 	if config.Input.UseREST {
 		wg.Add(1)
 		go func() {
-			rest.Start(ctx, downloadQueue, ":8080")
+			log, slog := logger.Rest()
+			rest := rest.NewRest(ctx, log, slog, ":8080", downloadQueue)
+			rest.Start()
 			wg.Done()
 		}()
 	}
