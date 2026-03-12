@@ -25,6 +25,8 @@ func NewRest(
 ) *rest {
 	return &rest{
 		ctx:           ctx,
+		log:           log,
+		slog:          slog,
 		port:          port,
 		downloadQueue: downloadQueue,
 	}

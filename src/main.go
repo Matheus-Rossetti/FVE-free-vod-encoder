@@ -50,22 +50,18 @@ func main() {
 
 	// START INPUT METHODS
 	if config.Input.UseTerminal {
-		wg.Add(1)
 		log, slog := logger.Cli()
-		go func() {
-			terminal := cli.NewCli(ctx, log, slog, downloadQueue)
-			terminal.Start()
-			wg.Done()
-		}()
+		wg.Go(func() {
+			cli := cli.NewCli(ctx, log, slog, downloadQueue)
+			cli.Start()
+		})
 	}
 	if config.Input.UseREST {
-		wg.Add(1)
-		go func() {
-			log, slog := logger.Rest()
-			rest := rest.NewRest(ctx, log, slog, ":8080", downloadQueue)
+		log, slog := logger.Rest()
+		wg.Go(func() {
+			rest := rest.NewRest(ctx, log, slog, "8080", downloadQueue)
 			rest.Start()
-			wg.Done()
-		}()
+		})
 	}
 
 	// START OUTPUT METHODS

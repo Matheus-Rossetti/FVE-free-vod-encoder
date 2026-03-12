@@ -1,11 +1,13 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 )
 
 func (r *rest) Start() {
-	r.slog.Info("Starting... ", "Addrs", "http://localhost:"+r.port)
+	addrs := fmt.Sprintf("http://localhost:%v", r.port)
+	r.slog.Info("Starting... ", "Addrs", addrs)
 
 	mux := http.NewServeMux()
 	r.AddRoutes(mux)
