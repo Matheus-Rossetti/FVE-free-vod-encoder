@@ -13,7 +13,7 @@ func (d *downloader) Start() {
 JobLoop:
 	for job := range d.downloadQueue {
 		d.slog.Info(
-			fmt.Sprintf("Received %v from %v", job.DownloadJob.UriType, job.DownloadJob.Source),
+			fmt.Sprintf("Received %v from %v", job.DownloadJob.UriType.String(), job.DownloadJob.Source),
 			"id", d.id,
 		)
 
@@ -23,7 +23,7 @@ JobLoop:
 			file.Truncate(0)
 			file.Seek(0, 0) // 'Go' to the beginning of the file
 
-			err := d.DownloadToFile(d.ctx, job.DownloadJob.VideoUri, file)
+			err := d.DownloadToFile(job.DownloadJob.VideoUri, file)
 			if err != nil {
 				fmt.Printf("\nError downloading %v to file", job.DownloadJob.VideoUri)
 				d.filePool <- file
