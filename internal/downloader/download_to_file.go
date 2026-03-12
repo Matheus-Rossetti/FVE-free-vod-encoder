@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func DownloadToFile(ctx context.Context, url string, file *os.File) error {
+func (d *downloader) DownloadToFile(ctx context.Context, url string, file *os.File) error {
 
 	// Check if it's a video
 	fyleType := checkFileType(url)
@@ -45,7 +45,7 @@ func DownloadToFile(ctx context.Context, url string, file *os.File) error {
 }
 
 // Downloads the first 512 bytes (or less) and check fileType
-func checkFileType(url string) string {
+func (d *downloader) checkFileType(url string) string {
 
 	// Can't use http.Get because we need to modify Headers
 	request, err := http.NewRequest("GET", url, nil)

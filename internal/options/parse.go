@@ -1,15 +1,13 @@
 package options
 
 import (
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func ParseOptions() *core.Options {
-	fmt.Println("Parsing options...")
+func (o *options) ParseOptions() *core.Options {
+	o.slog.Info("Parsing options...")
 
 	// TODO If config.yml file isn't found, or is malformed
 	// get options from charm's Huh lib (terminal form)
@@ -47,7 +45,7 @@ func ParseOptions() *core.Options {
 		},
 	}
 
-	if IsRunningInDocker() {
+	if o.IsRunningInDocker() {
 		options.Upload.S3.S3Endpoint = os.Getenv("S3_ENDPOINT")
 		options.Upload.S3.S3AccessKey = os.Getenv("S3_ACCESS_KEY")
 		options.Upload.S3.S3AccessKey = os.Getenv("S3_SECRET_KEY")
@@ -56,7 +54,7 @@ func ParseOptions() *core.Options {
 
 	// parse config.yaml
 
-	log.Println("config.yml file not found, using standard options.")
+	o.slog.Warn("config.yml file not found, using standard options.")
 	return options
 
 }

@@ -8,11 +8,13 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/Matheus-Rossetti/frevod/internal/app"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
+	"github.com/Matheus-Rossetti/frevod/internal/logger"
 	"github.com/Matheus-Rossetti/frevod/internal/options"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/local"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/s3"
@@ -21,14 +23,17 @@ import (
 
 func main() {
 
-	core.CheckForFFmpegBin()
-	options := options.ParseOptions()
-	core.Greet()
+	app := app.NewApp(logger.App())
+	app.CheckForFFmpegBin()
+	app.Greet()
+
+	options := options.NewOptions(logger.Options())
+	config := options.ParseOptions()
 
 	// MAKE QUEUES
 	downloadQueue := make(chan *core.Job, 999)
-	encodeQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
-	uploadQueue := make(chan *core.Job, options.Encode.ConcurrentEncodings)
+	encodeQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
+	uploadQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
 
 	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -44,14 +49,16 @@ func main() {
 	var wg sync.WaitGroup
 
 	// START INPUT METHODS
-	if options.Input.UseTerminal {
+	if config.Input.UseTerminal {
 		wg.Add(1)
+		log, slog := logger.Cli()
 		go func() {
-			cli.Start(ctx, downloadQueue)
+			terminal := cli.NewCli(ctx, log, slog, downloadQueue)
+			terminal.Start()
 			wg.Done()
 		}()
 	}
-	if options.Input.UseREST {
+	if config.Input.UseREST {
 		wg.Add(1)
 		go func() {
 			rest.Start(ctx, downloadQueue, ":8080")
@@ -61,43 +68,48 @@ func main() {
 
 	// START OUTPUT METHODS
 	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start
-	if options.Upload.Local.Use {
-		provider := local.Start(options)
+	if config.Upload.Local.Use {
+		provider := local.Start(config)
 		storageProviders["local"] = provider
 	}
-	if options.Upload.S3.Use {
-		provider := s3.Start(options)
+	if config.Upload.S3.Use {
+		provider := s3.Start(config)
 		storageProviders["s3"] = provider
 	}
 
 	// START FILE POOL (used by downloader and encoder)
-	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
-	files := core.PrepareStorageFiles(options)
-	core.FillFilePool(files, filePool)
+	filePool := make(chan *os.File, config.Encode.ConcurrentEncodings*2)
+	files := app.PrepareStorageFiles(config)
+	app.FillFilePool(files, filePool)
 
 	// START DOWNLOADERS
-	for index := range options.Encode.ConcurrentEncodings * 2 {
+	for index := range config.Encode.ConcurrentEncodings * 2 {
 		wg.Add(1)
 		go func() {
-			downloader.Start(ctx, options, filePool, index, downloadQueue, encodeQueue)
+			// this doesn't work, maybe because when you pass a chan to a struct
+			// it becomes another channel, and not the same
+			// the downloadQueue doesn't close if we pass it into the struct
+			log, slog := logger.Downloader()
+			downloader := downloader.NewDownloader(log, slog, ctx, config, filePool, index, downloadQueue, encodeQueue)
+			downloader.Start()
 			wg.Done()
 		}()
 	}
 
 	// START ENCODERS
-	for index := range options.Encode.ConcurrentEncodings {
+	for index := range config.Encode.ConcurrentEncodings {
 		wg.Add(1)
 		go func() {
-			encoder.Start(ctx, options, filePool, index, encodeQueue, uploadQueue)
+			encoder.Start(ctx, config, filePool, index, encodeQueue, uploadQueue)
 			wg.Done()
 		}()
 	}
 
 	// START UPLOAD
-	for index := range options.Encode.ConcurrentEncodings {
+	for index := range config.Encode.ConcurrentEncodings {
 		wg.Add(1)
 		go func() {
-			uploader.Start(ctx, options, index, uploadQueue, storageProviders)
+			uploader.Start(ctx, config, index, uploadQueue, storageProviders)
 			wg.Done()
 		}()
 	}
@@ -105,7 +117,8 @@ func main() {
 	// Shutdown
 	wg.Wait()
 	close(filePool)
-	core.CloseAndDeleteStorageFiles(filePool)
+	app.CloseAndDeleteStorageFiles(filePool)
+	os.RemoveAll("storage_files")
 	stop()
 
 	fmt.Printf("\n\nEverything's clean, bye :)\n")

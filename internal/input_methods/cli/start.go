@@ -1,16 +1,10 @@
 package cli
 
-import (
-	"context"
-	"fmt"
+func (c *cli) Start() {
+	c.slog.Info("Starting...")
 
-	"github.com/Matheus-Rossetti/frevod/internal/core"
-)
+	go c.ListenForInput()
 
-func Start(ctx context.Context, downloadQueue chan<- *core.Job) {
-	fmt.Printf("\nStarting terminal input method...")
-	go Run(downloadQueue)
-
-	<-ctx.Done()
-	shutdownCli()
+	<-c.ctx.Done()
+	c.shutdownCli()
 }

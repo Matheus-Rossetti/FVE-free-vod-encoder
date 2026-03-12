@@ -48,5 +48,6 @@ JobLoop:
 	}
 
 	// After queue closes
+	os.RemoveAll("output")
 	fmt.Printf("\nEncode %v shuting down...", id)
 }

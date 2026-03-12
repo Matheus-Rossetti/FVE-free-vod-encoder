@@ -1,37 +1,27 @@
 package downloader
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(
-	ctx context.Context,
-	options *core.Options,
-	filePool chan *os.File,
-	id int,
-	downloadQueue <-chan *core.Job,
-	encodeQueue chan<- *core.Job,
-) {
+func (d *downloader) Start() {
 JobLoop:
-	for job := range downloadQueue {
-		fmt.Printf("Download worker %v received %v from %v\n", id, job.DownloadJob.UriType, job.DownloadJob.Source)
+	for job := range d.downloadQueue {
+		fmt.Printf("Download worker %v received %v from %v\n", d.id, job.DownloadJob.UriType, job.DownloadJob.Source)
 
 		switch job.DownloadJob.UriType {
 		case "url":
-			file := <-filePool // file is returned to the pool by the encoder
+			file := <-d.filePool // file is returned to the pool by the encoder
 			file.Truncate(0)
 			file.Seek(0, 0) // 'Go' to the beginning of the file
 
-			err := DownloadToFile(ctx, job.DownloadJob.VideoUri, file)
+			err := d.DownloadToFile(d.ctx, job.DownloadJob.VideoUri, file)
 			if err != nil {
 				fmt.Printf("\nError downloading %v to file", job.DownloadJob.VideoUri)
-				filePool <- file
+				d.filePool <- file
 				continue JobLoop
 			}
 			job.EncodeJob.DownloadedFile = true
@@ -63,9 +53,9 @@ JobLoop:
 			job.EncodeJob.File = localFile
 		}
 
-		encodeQueue <- job
+		d.encodeQueue <- job
 	}
 
 	// After queue closes
-	fmt.Printf("\nDownloader %v shutting down...", id)
+	d.slog.Warn("Shutting down...", "id", d.id)
 }
