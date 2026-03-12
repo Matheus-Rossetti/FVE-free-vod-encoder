@@ -1,12 +1,16 @@
 package downloader
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
-	"os"
-	"strings"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+)
+
+var (
+	ErrPreparingFileforDownload = errors.New("failed to prepare file")
+	ErrDownloading              = errors.New("failed to download file")
+	ErrValidatingFileFromPath   = errors.New("failed local file validation")
 )
 
 func (d *downloader) Start() {
@@ -19,41 +23,31 @@ JobLoop:
 
 		switch job.DownloadJob.UriType {
 		case core.Url:
-			file := <-d.filePool // file is returned to the pool by the encoder
-			file.Truncate(0)
-			file.Seek(0, 0) // 'Go' to the beginning of the file
+			file := <-d.filePool // file is returned to the pool by the encoder or by an error
 
-			err := d.DownloadToFile(job.DownloadJob.VideoUri, file)
+			err := d.prepareFileForDownload(file)
 			if err != nil {
-				fmt.Printf("\nError downloading %v to file", job.DownloadJob.VideoUri)
+				d.slog.Error(ErrPreparingFileforDownload.Error(), "err", err)
+				continue JobLoop
+			}
+
+			err = d.downloadToFile(job.DownloadJob.VideoUri, file)
+			if err != nil {
+				d.slog.Error(ErrDownloading.Error(), "url", job.DownloadJob.VideoUri, "err", err)
 				d.filePool <- file
 				continue JobLoop
+
 			}
 			job.EncodeJob.DownloadedFile = true
 			job.EncodeJob.File = file
 
 		case core.Path:
-			strings.TrimPrefix(job.DownloadJob.VideoUri, "file://")
-			localFile, err := os.Open(job.DownloadJob.VideoUri)
-			defer localFile.Close()
+			localFile, err := d.validateFileFromPath(job.DownloadJob.VideoUri)
 			if err != nil {
-				fmt.Printf("\nError opening %v", job.DownloadJob.VideoUri)
+				d.slog.Error(ErrValidatingFileFromPath.Error(), "err", err)
 				continue JobLoop
 			}
 
-			// check if it's video
-			buffer := make([]byte, 512)
-			bytesRead, err := localFile.Read(buffer)
-			if err != nil {
-				fmt.Printf("\nError reading %v", job.DownloadJob.VideoUri)
-				continue JobLoop
-			}
-			MIMEtype := http.DetectContentType(buffer[:bytesRead])
-			fileType := strings.Split(MIMEtype, "/")
-			if fileType[0] != "video" {
-				fmt.Printf("\nError: File isn't a video, it's %v", fileType[0])
-				continue JobLoop
-			}
 			job.EncodeJob.DownloadedFile = false
 			job.EncodeJob.File = localFile
 		}

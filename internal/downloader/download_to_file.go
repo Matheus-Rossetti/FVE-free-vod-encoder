@@ -18,6 +18,8 @@ var (
 	ErrResponseStatusNotOk    = errors.New("request returned a status different from 200")
 	ErrReadingBodyIntoFile    = errors.New("failed to read response body stream into file")
 	ErrReadingBodyIntoBuffer  = errors.New("failed to read response body stream into buffer")
+	ErrTruncatingFile         = errors.New("failed to truncate file before downloading")
+	ErrPointingToFileHead     = errors.New("failed to point to file's head")
 )
 
 type FileType int
@@ -28,7 +30,7 @@ const (
 	video
 )
 
-func (d *downloader) DownloadToFile(url string, file *os.File) error {
+func (d *downloader) downloadToFile(url string, file *os.File) error {
 
 	// Check if it's a video
 	fyleType, err := d.checkFileType(url)
@@ -115,4 +117,22 @@ func (d *downloader) checkFileType(url string) (FileType, error) {
 	}
 
 	return video, nil
+}
+
+func (d *downloader) prepareFileForDownload(file *os.File) error {
+
+	err := file.Truncate(0)
+	if err != nil {
+		d.slog.Error(ErrTruncatingFile.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrTruncatingFile, err)
+	}
+
+	// Point to file head, otherwise might start download somewhere else
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		d.slog.Error(ErrTruncatingFile.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrPointingToFileHead, err)
+	}
+
+	return nil
 }
