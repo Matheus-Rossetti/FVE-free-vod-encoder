@@ -12,7 +12,10 @@ import (
 func (d *downloader) Start() {
 JobLoop:
 	for job := range d.downloadQueue {
-		fmt.Printf("Download worker %v received %v from %v\n", d.id, job.DownloadJob.UriType, job.DownloadJob.Source)
+		d.slog.Info(
+			fmt.Sprintf("Received %v from %v", job.DownloadJob.UriType, job.DownloadJob.Source),
+			"id", d.id,
+		)
 
 		switch job.DownloadJob.UriType {
 		case core.Url:

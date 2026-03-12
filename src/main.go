@@ -22,7 +22,7 @@ import (
 
 func main() {
 
-	frevod := StartFrevod(logger.Frevod())
+	frevod := startFrevod(logger.Frevod())
 	frevod.CheckForFFmpegBin()
 	frevod.Greet()
 
@@ -39,7 +39,6 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
-		frevod.slog.Info("Shutdown signal received")
 		close(downloadQueue)
 		close(encodeQueue)
 		close(uploadQueue)
@@ -81,16 +80,11 @@ func main() {
 
 	// START DOWNLOADERS
 	for index := range config.Encode.ConcurrentEncodings * 2 {
-		wg.Add(1)
-		go func() {
-			// this doesn't work, maybe because when you pass a chan to a struct
-			// it becomes another channel, and not the same
-			// the downloadQueue doesn't close if we pass it into the struct
+		wg.Go(func() {
 			log, slog := logger.Downloader()
-			downloader := downloader.NewDownloader(log, slog, ctx, config, filePool, index, downloadQueue, encodeQueue)
+			downloader := downloader.NewDownloader(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
 			downloader.Start()
-			wg.Done()
-		}()
+		})
 	}
 
 	// START ENCODERS

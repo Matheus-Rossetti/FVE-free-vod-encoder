@@ -10,7 +10,7 @@ type frevod struct {
 	slog *slog.Logger
 }
 
-func StartFrevod(log *log.Logger, slog *slog.Logger) *frevod {
+func startFrevod(log *log.Logger, slog *slog.Logger) *frevod {
 	return &frevod{
 		log:  log,
 		slog: slog,

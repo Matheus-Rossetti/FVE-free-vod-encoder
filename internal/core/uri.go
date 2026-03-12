@@ -30,3 +30,14 @@ func CategorizeUri(uri string) (URIType, error) {
 		return Unsupported, ErrUnsupportedUri
 	}
 }
+
+func (u URIType) String() string {
+	switch u {
+	case Url:
+		return "url"
+	case Path:
+		return "path"
+	default:
+		return "unsupported"
+	}
+}

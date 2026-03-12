@@ -10,9 +10,9 @@ import (
 )
 
 type downloader struct {
+	ctx           context.Context
 	log           *log.Logger
 	slog          *slog.Logger
-	ctx           context.Context
 	options       *core.Options
 	filePool      chan *os.File
 	id            int
@@ -21,9 +21,9 @@ type downloader struct {
 }
 
 func NewDownloader(
+	ctx context.Context,
 	log *log.Logger,
 	slog *slog.Logger,
-	ctx context.Context,
 	options *core.Options,
 	filePool chan *os.File,
 	id int,
@@ -31,9 +31,9 @@ func NewDownloader(
 	encodeQueue chan<- *core.Job) *downloader {
 
 	return &downloader{
+		ctx:           ctx,
 		log:           log,
 		slog:          slog,
-		ctx:           ctx,
 		options:       options,
 		filePool:      filePool,
 		id:            id,
