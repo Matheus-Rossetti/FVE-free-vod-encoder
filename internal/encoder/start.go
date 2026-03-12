@@ -41,7 +41,7 @@ JobLoop:
 			continue JobLoop
 		}
 
-		job.UploadJob.Dir = outputDir
+		job.UploadJob.FromDir = outputDir
 		uploadQueue <- job
 
 		fmt.Printf("Job %v concluded!\n", video.Name)

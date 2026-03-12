@@ -9,15 +9,15 @@ import (
 	charmLog "github.com/charmbracelet/log"
 )
 
-func Cli() (*log.Logger, *slog.Logger) {
+func Rest() (*log.Logger, *slog.Logger) {
 
 	styles := charmLog.DefaultStyles()
-	styles.Prefix = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF9D47"))
+	styles.Prefix = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#DE6882"))
 
 	charmLogger := charmLog.NewWithOptions(
 		os.Stderr,
 		charmLog.Options{
-			Prefix: "Input/> cli",
+			Prefix: "Input/> rest",
 		})
 
 	charmLogger.SetStyles(styles)

@@ -1,6 +1,6 @@
 package core
 
 type UploadJob struct {
-	Dir          string
-	S3KeyStarter string
+	FromDir    string
+	KeyStarter string
 }

@@ -1,26 +1,24 @@
 package rest
 
 import (
-	"context"
-	"fmt"
 	"net/http"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(ctx context.Context, downloadQueue chan<- *core.Job, port string) {
-	fmt.Printf("\nStarting REST input method at http://localhost:%v\n", port)
+func (r *rest) Start() {
+	r.slog.Info("Starting... ", "Addrs", "http://localhost:"+r.port)
 
 	mux := http.NewServeMux()
-	AddRoutes(mux, downloadQueue)
+	r.AddRoutes(mux)
 
 	server := &http.Server{
-		Addr:    port,
-		Handler: mux,
+		Addr:     r.port,
+		Handler:  mux,
+		ErrorLog: r.log,
 	}
 
 	go server.ListenAndServe() // Run server
+	r.slog.Info("Waiting for requests!")
 
-	<-ctx.Done() // Waits for term or int signal
-	shutdownServer(server)
+	<-r.ctx.Done() // Waits for term or int signal
+	r.shutdownServer(server)
 }

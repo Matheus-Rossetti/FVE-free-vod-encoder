@@ -13,7 +13,7 @@ import (
 func (d *downloader) DownloadToFile(ctx context.Context, url string, file *os.File) error {
 
 	// Check if it's a video
-	fyleType := checkFileType(url)
+	fyleType := d.checkFileType(url)
 	if fyleType != "video" {
 		log.Fatal("Expected URL to download a video file. Got URL to download: ", fyleType)
 	}

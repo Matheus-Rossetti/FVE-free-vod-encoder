@@ -17,7 +17,7 @@ func (o *options) ParseOptions() *core.Options {
 	options := &core.Options{
 		Input: core.InputOptions{
 			UseTerminal: true,
-			UseREST:     false,
+			UseREST:     true,
 		},
 
 		Encode: core.EncodeOptions{

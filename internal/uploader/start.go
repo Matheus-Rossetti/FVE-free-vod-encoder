@@ -14,7 +14,7 @@ import (
 func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-chan *core.Job, storageProviders map[string]StorageProvider) {
 
 	for job := range uploadQueue {
-		fmt.Printf("\nUploader %v received %v to upload", id, job.UploadJob.Dir)
+		fmt.Printf("\nUploader %v received %v to upload", id, job.UploadJob.FromDir)
 
 		// CREATE UPLOAD POOL
 		uploadPool := make(chan struct{}, options.Upload.ConcurrentUploads)
@@ -33,7 +33,7 @@ func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-cha
 			var mu sync.Mutex
 
 			filepath.WalkDir(
-				job.UploadJob.Dir,
+				job.UploadJob.FromDir,
 				func(path string, entry fs.DirEntry, err error) error {
 
 					if providerContext.Err() != nil {
@@ -77,10 +77,10 @@ func Start(ctx context.Context, options *core.Options, id int, uploadQueue <-cha
 
 		} // provider loop
 
-		fmt.Printf("\nFinished upload job for %v!", job.UploadJob.Dir)
+		fmt.Printf("\nFinished upload job for %v!", job.UploadJob.FromDir)
 		fmt.Printf("\nDeleting local ROT files...")
-		go DeleteROT(job.UploadJob.Dir)
-		fmt.Printf("\nDir %v deleted!", job.UploadJob.Dir)
+		go DeleteROT(job.UploadJob.FromDir)
+		fmt.Printf("\nDir %v deleted!", job.UploadJob.FromDir)
 	}
 
 	// After queue closes

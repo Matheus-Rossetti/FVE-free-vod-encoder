@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func (d *downloader) Start() {
@@ -13,7 +15,7 @@ JobLoop:
 		fmt.Printf("Download worker %v received %v from %v\n", d.id, job.DownloadJob.UriType, job.DownloadJob.Source)
 
 		switch job.DownloadJob.UriType {
-		case "url":
+		case core.Url:
 			file := <-d.filePool // file is returned to the pool by the encoder
 			file.Truncate(0)
 			file.Seek(0, 0) // 'Go' to the beginning of the file
@@ -27,7 +29,7 @@ JobLoop:
 			job.EncodeJob.DownloadedFile = true
 			job.EncodeJob.File = file
 
-		case "path":
+		case core.Path:
 			strings.TrimPrefix(job.DownloadJob.VideoUri, "file://")
 			localFile, err := os.Open(job.DownloadJob.VideoUri)
 			defer localFile.Close()

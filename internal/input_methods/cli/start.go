@@ -6,5 +6,5 @@ func (c *cli) Start() {
 	go c.ListenForInput()
 
 	<-c.ctx.Done()
-	c.shutdownCli()
+	c.slog.Info("Shutting down...")
 }
