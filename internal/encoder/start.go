@@ -11,7 +11,7 @@ var (
 	ErrPreparingOutputStorage = errors.New("failed preparing output storage")
 	ErrGettingAboslutePath    = errors.New("failed getting the absolute path from file name")
 	ErrCreatingVideoStruct    = errors.New("failed when collecting video data")
-	ErrRunningFFmpegCommand   = errors.New("Failed when running FFmpeg command")
+	ErrRunningFFmpegCommand   = errors.New("failed when running FFmpeg command")
 )
 
 func (e *encoder) Start() {

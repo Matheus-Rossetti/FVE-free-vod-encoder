@@ -16,7 +16,7 @@ var (
 func (d *downloader) Start() {
 JobLoop:
 	for job := range d.downloadQueue {
-		d.slog.Info(fmt.Sprintf("Received a %v from %v", job.DownloadJob.UriType.String(), job.DownloadJob.Source),
+		d.slog.Info(fmt.Sprintf("Received a job from %v", job.DownloadJob.Source),
 			"id", d.id)
 
 		switch job.DownloadJob.UriType {

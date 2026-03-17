@@ -121,11 +121,11 @@ func main() {
 	// START UPLOAD
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings {
-		wg.Add(1)
-		go func() {
-			uploader.Start(ctx, config, index, uploadQueue, storageProviders)
-			wg.Done()
-		}()
+		wg.Go(func() {
+			log, slog := logger.Uploader()
+			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
+			uploader.Start()
+		})
 	}
 
 	// Shutdown
