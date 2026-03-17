@@ -1,13 +1,10 @@
 package encoder
 
 import (
-	"context"
 	"fmt"
 	"os/exec"
 	"slices"
 	"strings"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 // This is quite a complex file, it operates multiple string concatenations
@@ -17,11 +14,8 @@ import (
 // I tried my best not to make this ugly, okay? I'm Sorry
 
 // THERE'S AN EXAMPLE OF THE OUTPUT OF THIS FUNCTION AT THE END OF THIS FILE
-func BuildFFmpegCommand(
-	ctx context.Context,
-	options *core.Options,
-	video *Video,
-) *exec.Cmd {
+
+func (e *encoder) BuildFFmpegCommand(video *Video) *exec.Cmd {
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
 	input := []string{"-i", video.Source}
@@ -40,13 +34,13 @@ func BuildFFmpegCommand(
 		hlsOptions,
 	)
 
-	if options.Encode.OutputFFmpegCommand {
+	if e.options.Encode.OutputFFmpegCommand {
 		// TODO some values need to be inclosed in double quotes "example"
 		fmt.Println("\n", strings.Join(ffmpegArgs, " "))
 	}
 
 	// Returns a command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute
-	cmd := BuildForLowPrioExecution(ctx, ffmpegArgs)
+	cmd := e.BuildForLowPrioExecution(ffmpegArgs)
 
 	return cmd
 }

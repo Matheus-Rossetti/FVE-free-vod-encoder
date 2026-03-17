@@ -3,11 +3,11 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func (r *rest) Start() {
-	addrs := fmt.Sprintf("http://localhost:%v", r.port)
-	r.slog.Info("Starting... ", "Addrs", addrs)
+	r.slog.Info("Starting... ", "Addrs", fmt.Sprintf("http://localhost:%v", r.port))
 
 	mux := http.NewServeMux()
 	r.AddRoutes(mux)
@@ -18,9 +18,10 @@ func (r *rest) Start() {
 		ErrorLog: r.log,
 	}
 
-	go server.ListenAndServe() // Run server
+	go server.ListenAndServe()
 	r.slog.Info("Waiting for requests!")
 
-	<-r.ctx.Done() // Waits for term or int signal
-	r.shutdownServer(server)
+	<-r.ctx.Done()
+	time.Sleep(time.Second * 2)
+	r.shutdownServer(server) // already logs the shutdown
 }

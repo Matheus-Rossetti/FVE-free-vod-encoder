@@ -9,9 +9,7 @@ import (
 )
 
 func (c *cli) ListenForInput() {
-	c.slog.Info("Frevod is waiting for URIs in your terminal!")
-	c.slog.Info("Use: {videoUri} {key}")
-	c.slog.Info("Example: http://coolvideo.com home/coolvideo")
+	c.slog.Info("Frevod is waiting for URIs in your terminal! Use: videoUri key")
 
 	var (
 		videoUri        string
@@ -21,19 +19,23 @@ func (c *cli) ListenForInput() {
 	for {
 		_, err := fmt.Scanf("%v %v", &videoUri, &videoKeyStarter)
 		if err != nil {
-			c.slog.Error("Need URI and KEY!")
-			c.slog.Error("Example: /where/it/is where/to/put")
-			continue
+			// Scanf will also scan "ctrl + c" and log the error if we
+			// dont check if the ctx is closed.
+			time.Sleep(time.Second) // scanning is faster than closing the ctx, so we wait.
+			select {
+			case <-c.ctx.Done():
+				return
+			default:
+				c.slog.Error("Need URI and KEY!")
+				c.slog.Error("Example: /where/it/is where/to/put")
+				continue
+			}
 		}
 
 		uriType, err := core.CategorizeUri(videoUri)
 		if errors.Is(err, core.ErrUnsupportedUri) {
 			c.slog.Error("Unsupported URI!")
 			c.slog.Info("Supported URIs starts with: http, https and file.")
-			continue
-
-		} else if err != nil {
-			c.slog.Error("Failed to categorize URI", "error", err)
 			continue
 		}
 

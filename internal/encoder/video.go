@@ -1,8 +1,18 @@
 package encoder
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
+)
+
+var (
+	ErrRunningFFprobe       = errors.New("failed when running FFprobe")
+	ErrParsingFFprobeOutput = errors.New("failed parsing FFprobe's output")
+	ErrGettingMetadata      = errors.New("failed to get metadata from video")
 )
 
 type Video struct {
@@ -22,16 +32,30 @@ type Video struct {
 	RenditionsToMake    []Resolution // if a video is 1440p/QHD, this would be -> 1440p, 1080p, 720p, 480p
 }
 
+type Metadata struct {
+	Streams []struct {
+		CodecType   string `json:"codec_type"`
+		Height      int    `json:"height"`
+		Width       int    `json:"width"`
+		AspectRatio string `json:"display_aspect_ratio"`
+		Duration    string `json:"duration"`
+	} `json:"streams"`
+}
+
 type Resolution struct {
 	name  string
 	value int
 }
 
-func NewVideo(videoPath string) *Video {
+func (e *encoder) NewVideo(videoPath string) (*Video, error) {
 	// this constructor is getting ugly
 
 	// --------- BASE VIDEO OBJ ---------
-	metadata := GetMetadataFrom(videoPath)
+	metadata, err := e.GetMetadataFrom(videoPath)
+	if err != nil {
+		e.slog.Error(ErrGettingMetadata.Error(), "err", err)
+		return nil, fmt.Errorf("%w: %v", ErrGettingMetadata, err)
+	}
 
 	videoFileName := filepath.Base(videoPath)
 	videoName := strings.TrimSuffix(videoFileName, filepath.Ext(videoFileName))
@@ -88,5 +112,33 @@ func NewVideo(videoPath string) *Video {
 		video.RenditionsToMake = append(video.RenditionsToMake, allResolutions[len(allResolutions)-1])
 	}
 
-	return &video
+	return &video, nil
+}
+
+func (e *encoder) GetMetadataFrom(videoPath string) (*Metadata, error) {
+
+	// flags here could be an array, but they are few enough, so no need.
+	cmd := exec.Command(
+		"ffprobe",
+		"-i", videoPath,
+		"-of", "json", // output format
+		"-loglevel", "error",
+		"-show_entries",
+		"stream=codec_type,width,height,display_aspect_ratio,duration", // used to build Video obj.
+	)
+
+	jsonOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		e.slog.Error(ErrRunningFFprobe.Error(), "err", err)
+		return nil, fmt.Errorf("%w: %v", ErrRunningFFprobe, err)
+	}
+
+	var metadata Metadata
+	err = json.Unmarshal(jsonOutput, &metadata)
+	if err != nil {
+		e.slog.Error(ErrParsingFFprobeOutput.Error(), "err", err)
+		return nil, fmt.Errorf("%w: %v", ErrParsingFFprobeOutput, err)
+	}
+
+	return &metadata, nil
 }

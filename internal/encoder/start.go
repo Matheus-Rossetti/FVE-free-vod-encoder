@@ -1,53 +1,67 @@
 package encoder
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func Start(
-	ctx context.Context,
-	options *core.Options,
-	filePool chan<- *os.File,
-	id int,
-	encodeQueue <-chan *core.Job,
-	uploadQueue chan<- *core.Job,
-) {
+var (
+	ErrPreparingOutputStorage = errors.New("failed preparing output storage")
+	ErrGettingAboslutePath    = errors.New("failed getting the absolute path from file name")
+	ErrCreatingVideoStruct    = errors.New("failed when collecting video data")
+	ErrRunningFFmpegCommand   = errors.New("Failed when running FFmpeg command")
+)
+
+func (e *encoder) Start() {
 JobLoop:
-	for job := range encodeQueue {
+	for job := range e.encodeQueue {
 		defer func() {
 			if job.EncodeJob.DownloadedFile {
-				filePool <- job.EncodeJob.File
+				e.filePool <- job.EncodeJob.File
 			}
 		}() // return the file to the pool
 
-		fmt.Printf("Encode worker %v received %v\n", id, job.EncodeJob.AbsoluteVideoPath)
-		outputDir := createOutputDir()
+		e.slog.Info(fmt.Sprintf("Receive a job! Encoding contents from %v", job.EncodeJob.File.Name()),
+			"id", e.id)
 
-		absoluteVideoPath, _ := filepath.Abs(job.EncodeJob.File.Name())
+		absoluteVideoPath, err := filepath.Abs(job.EncodeJob.File.Name())
+		if err != nil {
+			e.slog.Error(ErrGettingAboslutePath.Error(), "err", err, "id", e.id)
+			continue JobLoop
+		}
 
-		video := NewVideo(absoluteVideoPath)
-		cmd := BuildFFmpegCommand(ctx, options, video)
+		video, err := e.NewVideo(absoluteVideoPath)
+		if err != nil {
+			e.slog.Error(ErrCreatingVideoStruct.Error(), "err", err)
+			continue JobLoop
+		}
+
+		cmd := e.BuildFFmpegCommand(video)
+
+		outputDir, err := e.createOutputDir()
+		if err != nil {
+			e.slog.Error(ErrPreparingOutputStorage.Error(), "err", err, "id", e.id)
+			continue JobLoop
+		}
 
 		cmd.Dir = outputDir
-		err := cmd.Run()
+		err = cmd.Run()
 		if err != nil {
-			fmt.Printf("error while running the command: %v\nDeleting: %v", err, outputDir)
+			e.slog.Error(ErrRunningFFmpegCommand.Error(), "err", err, "id", e.id)
+			e.slog.Info(fmt.Sprintf("Deleting %v", outputDir))
 			os.RemoveAll(outputDir)
 			continue JobLoop
 		}
 
 		job.UploadJob.FromDir = outputDir
-		uploadQueue <- job
 
-		fmt.Printf("Job %v concluded!\n", video.Name)
+		e.slog.Info("Finished!", "id", e.id)
+		e.uploadQueue <- job
 	}
 
 	// After queue closes
 	os.RemoveAll("output")
-	fmt.Printf("\nEncode %v shuting down...", id)
+	e.slog.Info("Shutting down...", "id", e.id)
 }

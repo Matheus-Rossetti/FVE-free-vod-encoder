@@ -1,18 +1,29 @@
 package encoder
 
 import (
-	"log"
+	"errors"
+	"fmt"
 	"os"
 )
 
-func createOutputDir() string {
-	os.Mkdir("output", 0700)
+var (
+	ErrCreatingOutputDir = errors.New("failed to create the output/ dir to store encoded segments")
+	ErrCreatingTempDir   = errors.New("failed to create a temporary dir")
+)
+
+func (e *encoder) createOutputDir() (string, error) {
+	err := os.Mkdir("output", 0700)
+	if err != nil {
+		e.slog.Error(ErrCreatingOutputDir.Error(), "err", err)
+		return "", fmt.Errorf("%w: %v", ErrCreatingOutputDir, err)
+	}
 
 	// The return value here is "output/video-{random-string}"
 	dirName, err := os.MkdirTemp("output", "video-*")
 	if err != nil {
-		log.Fatal("Error creating output directory: ", err)
+		e.slog.Error(ErrCreatingTempDir.Error(), "err", err)
+		return "", fmt.Errorf("%w: %v", ErrCreatingTempDir, err)
 	}
 
-	return dirName
+	return dirName, nil
 }
