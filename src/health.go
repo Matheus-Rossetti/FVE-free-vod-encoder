@@ -10,12 +10,14 @@ func (f *frevod) CheckForFFmpegBin() {
 	_, err := cmd.CombinedOutput()
 
 	if err != nil {
-		f.slog.Error("FFmpeg binary not found! Frevod wont work without it :(")
+		f.slog.Error("FFmpeg not found! Frevod won't work without it :(")
 		f.slog.Error("Please install FFmpeg and ensure it's in your system's PATH.")
+
+		// TODO offer to auto install ffmpeg
 
 		switch runtime.GOOS {
 		case "windows":
-			f.log.Fatal("Here's the download link: https://www.ffmpeg.org/download.html")
+			f.log.Fatal("Run the following command: winget install ffmpeg")
 		case "linux":
 			f.log.Println("You can install FFmpeg using your package manager")
 			f.log.Println("Debian/Ubuntu: sudo apt install ffmpeg")
