@@ -2,19 +2,22 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 )
 
-func (s *S3) HandleError(uploadedFiles []string) {
+var ErrRemovingObj = errors.New("Failed to remove and object from S3")
 
-	fmt.Printf("\nStarting cleanup")
+func (s *S3) HandleError(uploadedFiles []string) error {
+
+	s.slog.Warn("Oops.. Starting cleanup...")
 
 	if len(uploadedFiles) < 1 {
-		fmt.Println("No files were uploaded.")
-		return
+		s.slog.Warn("Nothing to clean, no files were uploaded!")
+		return nil
 	}
 
 	// THIS SLEEP IS VERY IMPORTANT!!!
@@ -45,9 +48,10 @@ func (s *S3) HandleError(uploadedFiles []string) {
 
 	for rmErr := range errChan {
 		if rmErr.Err != nil {
-			fmt.Printf("\nFailed to remove object '%s': %v", rmErr.ObjectName, rmErr.Err)
+			s.slog.Error(ErrRemovingObj.Error(), "object", rmErr.ObjectName, "err", rmErr.Err)
+			return fmt.Errorf("%w: %v", ErrRemovingObj, rmErr.Err)
 		}
 	}
 
-	fmt.Printf("\n\n\nCleanup process finished!")
+	return nil
 }

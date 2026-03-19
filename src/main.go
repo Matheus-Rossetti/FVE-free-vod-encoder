@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -35,18 +34,23 @@ func main() {
 	options := options.NewOptions(logger.Options())
 	config := options.ParseOptions()
 
+	// START FILE POOL (used by downloader and encoder)
+	filePool := make(chan *os.File, config.Encode.ConcurrentEncodings*2)
+	files := frevod.PrepareStorageFiles(config)
+	frevod.FillFilePool(files, filePool)
+
+	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	var wg sync.WaitGroup
+
 	// MAKE QUEUES
 	downloadQueue := make(chan *core.Job, 999)
 	encodeQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
 	uploadQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
-
-	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-
 	go func() {
 		// The order in which the queues are closed is important
-		// If we close encoder is closes when downloader finishes a download job
-		// the downloader will try to push the job to the encoder, fail and leave orphan files.
+		// If we close the encoder when downloader is pushing a
+		// job to it, the push will fail and leave orphan files.
 		<-ctx.Done()
 		frevod.slog.Warn("Shutdown signal received!")
 
@@ -60,7 +64,51 @@ func main() {
 		close(uploadQueue)
 	}()
 
-	var wg sync.WaitGroup
+	// START OUTPUT METHODS
+	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start
+	if config.Upload.Local.Use {
+		time.Sleep(time.Second / 2)
+		log, slog := logger.Local()
+		provider := local.Start(log, slog, config)
+		storageProviders["local"] = provider
+	}
+	if config.Upload.S3.Use {
+		time.Sleep(time.Second / 2)
+		log, slog := logger.S3()
+		provider := s3.Start(log, slog, config)
+		storageProviders["s3"] = provider
+	}
+
+	// START UPLOAD
+	time.Sleep(time.Second / 2)
+	for index := range config.Encode.ConcurrentEncodings {
+		wg.Go(func() {
+			log, slog := logger.Uploader()
+			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
+			uploader.Start()
+		})
+	}
+
+	// START ENCODERS
+	time.Sleep(time.Second / 2)
+	for index := range config.Encode.ConcurrentEncodings {
+		wg.Go(func() {
+			log, slog := logger.Encoder()
+			encoder := encoder.NewEncoder(ctx, log, slog, config, filePool, index, encodeQueue, uploadQueue)
+			encoder.Start()
+		})
+	}
+
+	// START DOWNLOADERS
+	time.Sleep(time.Second / 2)
+	for index := range config.Encode.ConcurrentEncodings * 2 {
+		wg.Go(func() {
+			log, slog := logger.Downloader()
+			downloader := downloader.NewDownloader(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
+			downloader.Start()
+		})
+
+	}
 
 	// START INPUT METHODS
 	if config.Input.UseTerminal {
@@ -75,56 +123,8 @@ func main() {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Rest()
 		wg.Go(func() {
-			rest := rest.NewRest(ctx, log, slog, "8080", downloadQueue)
+			rest := rest.NewRest(ctx, log, slog, ":8080", downloadQueue)
 			rest.Start()
-		})
-	}
-
-	// START OUTPUT METHODS
-	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start
-	if config.Upload.Local.Use {
-		time.Sleep(time.Second / 2)
-		provider := local.Start(config)
-		storageProviders["local"] = provider
-	}
-	if config.Upload.S3.Use {
-		time.Sleep(time.Second / 2)
-		provider := s3.Start(config)
-		storageProviders["s3"] = provider
-	}
-
-	// START FILE POOL (used by downloader and encoder)
-	filePool := make(chan *os.File, config.Encode.ConcurrentEncodings*2)
-	files := frevod.PrepareStorageFiles(config)
-	frevod.FillFilePool(files, filePool)
-
-	// START DOWNLOADERS
-	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings * 2 {
-		wg.Go(func() {
-			log, slog := logger.Downloader()
-			downloader := downloader.NewDownloader(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
-			downloader.Start()
-		})
-	}
-
-	// START ENCODERS
-	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings {
-		wg.Go(func() {
-			log, slog := logger.Encoder()
-			encoder := encoder.NewEncoder(ctx, log, slog, config, filePool, index, encodeQueue, uploadQueue)
-			encoder.Start()
-		})
-	}
-
-	// START UPLOAD
-	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings {
-		wg.Go(func() {
-			log, slog := logger.Uploader()
-			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
-			uploader.Start()
 		})
 	}
 
@@ -133,7 +133,7 @@ func main() {
 	close(filePool)
 	frevod.CloseAndDeleteStorageFiles(filePool)
 	os.RemoveAll("storage_files")
-	stop()
+	stop() // ctx
 
-	fmt.Printf("\n\nEverything's clean, bye :)\n")
+	frevod.slog.Info("Everything's clean, bye :)")
 }

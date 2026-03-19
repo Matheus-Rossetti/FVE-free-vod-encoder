@@ -6,5 +6,5 @@ import (
 
 type StorageProvider interface {
 	Upload(context.Context, string, string) error
-	HandleError([]string)
+	HandleError([]string) error
 }

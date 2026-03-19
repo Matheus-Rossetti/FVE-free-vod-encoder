@@ -2,14 +2,19 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/minio/minio-go/v7"
 )
 
+var (
+	ErrUploadingFileToS3 = errors.New("failed when uploading a file to S3")
+)
+
 func (s *S3) Upload(ctx context.Context, key, filePath string) error {
 
-	info, err := s.Client.FPutObject(
+	_, err := s.Client.FPutObject(
 		ctx,
 		s.Bucket,
 		key,
@@ -17,10 +22,9 @@ func (s *S3) Upload(ctx context.Context, key, filePath string) error {
 		minio.PutObjectOptions{ContentType: "video/mp4"},
 	)
 	if err != nil {
-		fmt.Printf("\nError uploading: %v", err)
-		return fmt.Errorf("Error uploading files: %v", err)
+		s.slog.Error(ErrUploadingFileToS3.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrUploadingFileToS3, err)
 	}
 
-	fmt.Printf("\nSuccessfully uploaded %s of size %d", key, info.Size)
 	return nil
 }

@@ -18,7 +18,7 @@ var (
 func (u *uploader) Start() {
 
 	for job := range u.uploadQueue {
-		u.slog.Info(fmt.Sprintf("Received a job! Walking ", job.UploadJob.FromDir), "id", u.id)
+		u.slog.Info("Received a job! Walking dir", "dir", job.UploadJob.FromDir, "id", u.id)
 
 		// CREATE UPLOAD POOL
 		uploadPool := make(chan struct{}, u.options.Upload.ConcurrentUploads)
@@ -80,10 +80,15 @@ func (u *uploader) Start() {
 			wg.Wait() // finishes uploading to one provider before starting another
 
 			if providerContext.Err() != nil { // canceling the original ctx (using ctrl + c) will also cancel the providerContext
-				provider.HandleError(uploadedFiles)
+				err := provider.HandleError(uploadedFiles)
+				if err != nil {
+					u.slog.Error("Couldn't handle error, sorry :(")
+				} else {
+					u.slog.Info("Finished cleanup!")
+				}
 			}
 
-			u.slog.Info(fmt.Sprintf("Done upliading to %v", providerName), "dir", job.UploadJob.FromDir, "id", u.id)
+			u.slog.Info("Finished upliading!", "to", providerName, "dir", job.UploadJob.FromDir, "id", u.id)
 		} // provider loop
 
 		go DeleteROT(job.UploadJob.FromDir)

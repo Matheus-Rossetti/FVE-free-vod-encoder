@@ -30,16 +30,16 @@ func (o *options) ParseOptions() *core.Options {
 
 		Upload: core.UploadOptions{
 			S3: core.AmazonS3Options{
-				S3Endpoint:        "",
-				S3AccessKey:       "",
-				S3SecretAccessKey: "",
+				S3Endpoint:        "https://b169176ab0ecd53f481c3fc91eb60048.r2.cloudflarestorage.com",
+				S3AccessKey:       "98a0e3bb4a4650adc351b32ab6cde97c",
+				S3SecretAccessKey: "ac472e0373c488de2a2bb045011d744c34d830f14981dc151b0196d248131d12",
 				S3BucketName:      "videos",
-				Use:               false,
+				Use:               true,
 				S3UseSSL:          true,
 			},
 			Local: core.LocalOption{
 				Use:     true,
-				StoreAt: "/home/matheusrossetti/segmented-videos",
+				StoreAt: `C:\Users\mathe\OneDrive\Desktop\segmented videos`,
 			},
 			ConcurrentUploads: 10,
 		},

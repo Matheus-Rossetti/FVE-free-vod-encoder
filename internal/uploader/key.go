@@ -4,10 +4,12 @@ import (
 	"path/filepath"
 )
 
-func getKey(keyStarter, path string) string {
+func getKey(keyStarter, basePath, targPath string) string {
 
-	dir := filepath.Dir(path)
-	filename := filepath.Base(path)
+	relativePath, _ := filepath.Rel(basePath, targPath)
+
+	dir := filepath.Dir(relativePath)
+	filename := filepath.Base(relativePath)
 
 	var s3_key string
 	if dir != "." { // dir is "." if path is only the filename
