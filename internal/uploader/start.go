@@ -52,7 +52,7 @@ func (u *uploader) Start() {
 					go func() error {
 						defer func() { uploadPool <- struct{}{}; wg.Done() }()
 
-						key := getKey(job.UploadJob.KeyStarter, path)
+						key := getKey(job.UploadJob.KeyStarter, job.UploadJob.FromDir, path)
 						absolutePath, err := filepath.Abs(path)
 						if err != nil {
 							cancel()

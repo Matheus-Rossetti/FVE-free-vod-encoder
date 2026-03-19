@@ -17,7 +17,7 @@ var (
 func (e *encoder) Start() {
 JobLoop:
 	for job := range e.encodeQueue {
-		e.slog.Info(fmt.Sprintf("Receive a job! Encoding contents from %v", job.EncodeJob.File.Name()),
+		e.slog.Info(fmt.Sprintf("Received a job! Encoding contents from %v", job.EncodeJob.File.Name()),
 			"id", e.id)
 
 		absoluteVideoPath, err := filepath.Abs(job.EncodeJob.File.Name())

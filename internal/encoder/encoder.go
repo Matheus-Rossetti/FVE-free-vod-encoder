@@ -34,6 +34,7 @@ func NewEncoder(
 		log:         log,
 		slog:        slog,
 		options:     options,
+		filePool:    filePool,
 		id:          id,
 		encodeQueue: encodeQueue,
 		uploadQueue: uploadQueue,

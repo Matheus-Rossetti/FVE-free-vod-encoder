@@ -28,6 +28,7 @@ JobLoop:
 			err := d.prepareFileForDownload(file)
 			if err != nil {
 				d.slog.Error(ErrPreparingFileforDownload.Error(), "err", err, "id", d.id)
+				d.filePool <- file
 				continue JobLoop
 			}
 
