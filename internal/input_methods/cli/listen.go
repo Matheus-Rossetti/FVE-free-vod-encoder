@@ -26,6 +26,7 @@ func (c *cli) ListenForInput() {
 			case <-c.ctx.Done():
 				return
 			default:
+				c.slog.Error("Error", "err", err)
 				c.slog.Error("Need URI and KEY!")
 				c.slog.Error("Example: /where/it/is where/to/put")
 				continue

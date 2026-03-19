@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/minio/minio-go/v7"
 )
@@ -13,6 +14,9 @@ var (
 )
 
 func (s *S3) Upload(ctx context.Context, key, filePath string) error {
+
+	// keys built on windows comes with back slashes '\' but S3 uses forward slashes '/'
+	key = strings.ReplaceAll(key, `\`, "/")
 
 	_, err := s.Client.FPutObject(
 		ctx,

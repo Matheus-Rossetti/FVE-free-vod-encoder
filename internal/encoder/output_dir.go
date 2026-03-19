@@ -12,7 +12,7 @@ var (
 )
 
 func (e *encoder) createOutputDir() (string, error) {
-	err := os.Mkdir("output", 0700)
+	err := os.MkdirAll("output", 0700)
 	if err != nil {
 		e.slog.Error(ErrCreatingOutputDir.Error(), "err", err)
 		return "", fmt.Errorf("%w: %v", ErrCreatingOutputDir, err)

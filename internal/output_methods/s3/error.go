@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -36,6 +37,9 @@ func (s *S3) HandleError(uploadedFiles []string) error {
 		defer close(objInfoChan)
 
 		for _, key := range uploadedFiles {
+			// keys built on windows comes with back slashes '\' but S3 uses forward slashes '/'
+			key = strings.ReplaceAll(key, `\`, "/")
+
 			objInfoChan <- minio.ObjectInfo{
 				Key: key,
 			}
