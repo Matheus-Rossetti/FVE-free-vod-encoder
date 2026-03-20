@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"bufio"
 	"errors"
-	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
@@ -11,27 +13,32 @@ import (
 func (c *cli) ListenForInput() {
 	c.slog.Info("Frevod is waiting for URIs in your terminal! Use: videoUri key")
 
+	scanner := bufio.NewScanner(os.Stdin)
+
 	var (
+		input           string
+		parts           []string
 		videoUri        string
 		videoKeyStarter string
 	)
 
 	for {
-		_, err := fmt.Scanf("%v %v", &videoUri, &videoKeyStarter)
-		if err != nil {
-			// Scanf will also scan "ctrl + c" and log the error if we
-			// dont check if the ctx is closed.
-			time.Sleep(time.Second) // scanning is faster than closing the ctx, so we wait.
-			select {
-			case <-c.ctx.Done():
-				return
-			default:
-				c.slog.Error("Error", "err", err)
-				c.slog.Error("Need URI and KEY!")
-				c.slog.Error("Example: /where/it/is where/to/put")
-				continue
-			}
+
+		if !scanner.Scan() {
+			break
 		}
+
+		input = scanner.Text()
+		parts = strings.Fields(input)
+
+		if len(parts) != 2 {
+			c.slog.Error("Need URI and KEY!")
+			c.slog.Error("Example: /where/it/is where/to/put")
+			continue
+		}
+
+		videoUri = parts[0]
+		videoKeyStarter = parts[1]
 
 		uriType, err := core.CategorizeUri(videoUri)
 		if errors.Is(err, core.ErrUnsupportedUri) {
