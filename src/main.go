@@ -111,7 +111,7 @@ func main() {
 	}
 
 	// START INPUT METHODS
-	if config.Input.UseTerminal {
+	if config.Input.Cli {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Cli()
 		wg.Go(func() {
@@ -119,7 +119,7 @@ func main() {
 			cli.Start()
 		})
 	}
-	if config.Input.UseREST {
+	if config.Input.REST {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Rest()
 		wg.Go(func() {
