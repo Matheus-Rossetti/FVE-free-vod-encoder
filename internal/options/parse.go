@@ -12,11 +12,14 @@ import (
 func (o *options) ParseOptions() *core.Options {
 	o.slog.Info("Parsing options...")
 	options := &core.Options{}
+	validate := validator.New()
 	// TODO If config.yml file isn't found, or is malformed
 	// get options from charm's Huh lib (terminal form)
 	// add option to save that config into a config.yml
 
 	if o.IsRunningInDocker() {
+		o.slog.Info("Running in Docker!")
+
 		options.Input.Cli = false
 		options.Input.REST = true
 		options.Upload.S3.Endpoint = os.Getenv("ENDPOINT")
@@ -37,6 +40,16 @@ func (o *options) ParseOptions() *core.Options {
 		if options.Upload.Local.StoreAt != "" {
 			options.Upload.Local.Use = true
 		}
+
+		concurrentEncodings, _ := strconv.Atoi(os.Getenv("CONCURRENT_ENCODINGS"))
+		options.Encode.ConcurrentEncodings = concurrentEncodings
+
+		err = validate.Struct(options)
+		if err != nil {
+			o.slog.Error("Validation error", "err", err)
+			o.log.Fatal("Finishing program.")
+		}
+
 		return options
 	}
 
@@ -82,7 +95,6 @@ func (o *options) ParseOptions() *core.Options {
 		return options
 	}
 
-	validate := validator.New()
 	err = validate.Struct(options)
 	if err != nil {
 		o.slog.Error("Validation error", "err", err)

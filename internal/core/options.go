@@ -21,7 +21,7 @@ type EncodeOptions struct {
 	// Codec               string `yaml:"codec" validate:"oneof=h.264 h.265"`
 	// SegmentType         string `yaml:"segment_type" validate:"oneof=fmp4 ts"`
 	// SegmentDuration     int    `yaml:"segment_duration" validate:"min=0,max=10"`
-	ConcurrentEncodings int  `yaml:"concurrent_encodings" validate:"min=0,max=100"`
+	ConcurrentEncodings int  `yaml:"concurrent_encodings" validate:"min=1,max=100"`
 	OutputFFmpegCommand bool `yaml:"output_ffmpeg_command"`
 }
 

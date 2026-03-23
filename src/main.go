@@ -47,7 +47,7 @@ func main() {
 	downloadQueue := make(chan *core.Job, 999)
 	encodeQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
 	uploadQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
-	go func() {
+	wg.Go(func() {
 		// The order in which the queues are closed is important
 		// If we close the encoder when downloader is pushing a
 		// job to it, the push will fail and leave orphan files.
@@ -62,7 +62,7 @@ func main() {
 
 		time.Sleep(time.Second / 2)
 		close(uploadQueue)
-	}()
+	})
 
 	// START OUTPUT METHODS
 	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start

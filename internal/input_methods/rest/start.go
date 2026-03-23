@@ -19,6 +19,7 @@ func (r *rest) Start() {
 	}
 
 	go server.ListenAndServe()
+
 	r.slog.Info("Waiting for requests!")
 
 	<-r.ctx.Done()

@@ -1,4 +1,4 @@
-FROM golang:1.25.7-bookworm AS builder
+FROM golang:1.26.1 AS builder
 
 WORKDIR /app
 
@@ -9,20 +9,14 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o frevod ./src/
 
+FROM alpine:latest
 
-FROM debian:bookworm-slim
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     ffmpeg \
-    coreutils \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+    ca-certificates
 
 WORKDIR /app
 
 COPY --from=builder /app/frevod .
 
-CMD ["./frevod"]
+ENTRYPOINT ["./frevod"]
