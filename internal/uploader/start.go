@@ -12,17 +12,18 @@ import (
 var (
 	ErrGettingAbsolutePath = errors.New("failed getting the absolute path to upload from")
 	ErrUploadingFile       = errors.New("Failed when uploading a file")
+
+	concurrentUploads = 10
 )
 
 // This function is getting messier by de day, refactor or be ashamed.
 func (u *uploader) Start() {
-
 	for job := range u.uploadQueue {
 		u.slog.Info("Received a job! Walking dir", "dir", job.UploadJob.FromDir, "id", u.id)
 
 		// CREATE UPLOAD POOL
-		uploadPool := make(chan struct{}, u.options.Upload.ConcurrentUploads)
-		for range u.options.Upload.ConcurrentUploads {
+		uploadPool := make(chan struct{}, concurrentUploads)
+		for range concurrentUploads {
 			uploadPool <- struct{}{}
 		}
 

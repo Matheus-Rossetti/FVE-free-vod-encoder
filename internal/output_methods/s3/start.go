@@ -19,11 +19,11 @@ type S3 struct {
 
 func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
 
-	bucket := options.Upload.S3.S3BucketName
-	endpoint := options.Upload.S3.S3Endpoint
-	accessKeyID := options.Upload.S3.S3AccessKey
-	secretAccessKey := options.Upload.S3.S3SecretAccessKey
-	useSSL := options.Upload.S3.S3UseSSL
+	bucket := options.Upload.S3.BucketName
+	endpoint := options.Upload.S3.Endpoint
+	accessKeyID := options.Upload.S3.AccessKey
+	secretAccessKey := options.Upload.S3.SecretAccessKey
+	useSSL := options.Upload.S3.UseSSL
 
 	// Minio complains if the endpoint includes http://
 	endpoint = strings.TrimPrefix(endpoint, "http://")

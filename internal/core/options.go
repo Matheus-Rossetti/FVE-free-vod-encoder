@@ -1,55 +1,49 @@
 package core
 
 type Options struct {
-	ExposeMetrics bool
+	Input  InputOptions  `yaml:"input"`
+	Encode EncodeOptions `yaml:"encode"`
+	Upload UploadOptions `yaml:"upload"`
 
-	// input
-	Input InputOptions `mapstructure:"input"`
-
-	// encode
-	Encode EncodeOptions `mapstructure:"encode"`
-
-	// upload
-	Upload UploadOptions `mapstructure:"upload"`
+	// ExposeMetrict bool `yaml:"expose_metrics"`
 }
 
 type InputOptions struct {
-	UseTerminal bool `mapstructure:"use_terminal"`
-	UseREST     bool `mapstructure:"use_rest"`
-	// UseRabbitMQ bool
-	// UseKafka    bool
-	// UseGRPC     bool
+	Cli  bool `yaml:"cli"`
+	REST bool `yaml:"rest"`
+	// RabbitMQ bool
+	// Kafka    bool
+	// GRPC     bool
+	// QSQ      bool
 }
 
 type EncodeOptions struct {
-	Codec               string `mapstructure:"codec"`
-	SegmentType         string `mapstructure:"segment_type"`
-	SegmentDuration     int    `mapstructure:"segment_duration"`
-	ConcurrentEncodings int    `mapstructure:"concurrent_encodings"`
-	OutputFFmpegCommand bool   `mapstructure:"output_ffmpeg_command"`
+	// Codec               string `yaml:"codec" validate:"oneof=h.264 h.265"`
+	// SegmentType         string `yaml:"segment_type" validate:"oneof=fmp4 ts"`
+	// SegmentDuration     int    `yaml:"segment_duration" validate:"min=0,max=10"`
+	ConcurrentEncodings int  `yaml:"concurrent_encodings" validate:"min=0,max=100"`
+	OutputFFmpegCommand bool `yaml:"output_ffmpeg_command"`
 }
 
 type UploadOptions struct {
-	S3 AmazonS3Options `mapstructure:"s3"`
+	S3 AmazonS3Options `yaml:"s3"`
 	// UseAzureBlob    AzureBlobStorage
 	// UseCloudStorage GoogleCloudStorage
-	Local LocalOption `mapstructure:"local"`
-
-	ConcurrentUploads int `mapstructure:"concurrent_uploads"`
+	Local LocalOption `yaml:"local"`
 }
 
 type LocalOption struct {
-	Use     bool   `mapstructure:"use"`
-	StoreAt string `mapstructure:"store_at"`
+	Use     bool   `yaml:"use"`
+	StoreAt string `yaml:"store_at" validate:"required_if=Use true"`
 }
 
 type AmazonS3Options struct {
-	Use               bool   `mapstructure:"use"`
-	S3Endpoint        string `mapstructure:"s3_endpoint"`
-	S3AccessKey       string `mapstructure:"s3_access_key"`
-	S3SecretAccessKey string `mapstructure:"s3_secret_key"`
-	S3BucketName      string `mapstructure:"s3_bucket_name"`
-	S3UseSSL          bool   `mapstructure:"s3_use_ssl"`
+	Use             bool   `yaml:"use"`
+	Endpoint        string `yaml:"endpoint" validate:"required_if=Use true"`
+	AccessKey       string `yaml:"access_key" validate:"required_if=Use true"`
+	SecretAccessKey string `yaml:"secret_key" validate:"required_if=Use true"`
+	BucketName      string `yaml:"bucket_name" validate:"required_if=Use true"`
+	UseSSL          bool   `yaml:"ssl" validate:"required_if=Use true"`
 }
 
 type AzureBlobStorageOptions struct {

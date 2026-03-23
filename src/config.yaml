@@ -1,20 +1,15 @@
 input:
   cli: true
   rest: false
-  kafka: false
-  grpc: false
-  sqs: false
   
 encode:
-  codec: "h.264"
-  segment_type: "fmp4"
-  segment_duration: 2
   concurrent_encodings: 2
   output_ffmpeg_command: false
   
 upload:
   s3:
     use: false
+    bucket_name: ""
     s3_endpoint: ""
     s3_access_key: ""
     s3_secret_key: ""
@@ -22,4 +17,6 @@ upload:
   local:
     use: true
     store_at: C:\Users\mathe\OneDrive\Desktop\segmented videos
+
+
   
