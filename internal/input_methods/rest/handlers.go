@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -28,12 +27,7 @@ func (rest *rest) videoHandler() http.HandlerFunc {
 			return
 		}
 
-		uriType, err := core.CategorizeUri(request.VideoUri)
-		if errors.Is(err, core.ErrUnsupportedUri) {
-			http.Error(w, "Unsupported URI Type!\nAccepts: http, https and file.", http.StatusUnprocessableEntity)
-		} else if err != nil {
-			http.Error(w, "Error categorizing URI!\nAccepts: http, https and file.", http.StatusInternalServerError)
-		}
+		uriType := core.CategorizeUri(request.VideoUri)
 
 		job := core.NewJob()
 

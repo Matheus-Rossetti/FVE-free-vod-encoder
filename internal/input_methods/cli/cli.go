@@ -13,6 +13,7 @@ type cli struct {
 	log           *log.Logger
 	slog          *slog.Logger
 	downloadQueue chan<- *core.Job
+	err           error
 }
 
 func NewCli(ctx context.Context, log *log.Logger, slog *slog.Logger, downloadQueue chan<- *core.Job) *cli {
@@ -21,5 +22,6 @@ func NewCli(ctx context.Context, log *log.Logger, slog *slog.Logger, downloadQue
 		log:           log,
 		slog:          slog,
 		downloadQueue: downloadQueue,
+		err:           nil,
 	}
 }

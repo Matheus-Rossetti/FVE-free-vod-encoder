@@ -1,12 +1,9 @@
 package core
 
 import (
-	"errors"
 	nUrl "net/url"
 	"strings"
 )
-
-var ErrUnsupportedUri = errors.New("unsupported uri")
 
 type URIType int
 
@@ -16,18 +13,18 @@ const (
 	Path
 )
 
-func CategorizeUri(uri string) (URIType, error) {
+func CategorizeUri(uri string) URIType {
 
 	parsedUri, _ := nUrl.Parse(uri)
 	scheme := strings.ToLower(parsedUri.Scheme)
 
 	switch scheme {
 	case "http", "https":
-		return Url, nil
+		return Url
 	case "file", "":
-		return Path, nil
+		return Path
 	default:
-		return Unsupported, ErrUnsupportedUri
+		return Unsupported
 	}
 }
 
