@@ -20,7 +20,7 @@ func TestValidateInput(t *testing.T) {
 		wantErr            bool
 	}{
 		{
-			name:               "Happy Path with URL",
+			name:               "valid URL and key",
 			input:              "http://coolvideo.com key/starter",
 			expectedUriType:    core.Url,
 			expectedUri:        "http://coolvideo.com",
@@ -29,7 +29,7 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            false,
 		},
 		{
-			name:               "Happy Path with Path",
+			name:               "valid path and key",
 			input:              "/coolvideo.mp4 key/starter",
 			expectedUriType:    core.Path,
 			expectedUri:        "/coolvideo.mp4",
@@ -38,7 +38,7 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            false,
 		},
 		{
-			name:               "With initial error",
+			name:               "with initial error",
 			input:              "/coolvideo.mp4 key/starter",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
@@ -47,7 +47,7 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            true,
 		},
 		{
-			name:               "Inputing uri only",
+			name:               "with uri only",
 			input:              "http://coolvideo.com",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
@@ -56,8 +56,17 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            true,
 		},
 		{
-			name:               "Inputing more than just uri and key",
+			name:               "with more than uri and key",
 			input:              "http://coolvideo.com key/starter something-that-shouldn't-be-here",
+			expectedUriType:    core.Unsupported,
+			expectedUri:        "",
+			expectedKeyStarter: "",
+			initialErr:         nil,
+			wantErr:            true,
+		},
+		{
+			name:               "with unsupported uri",
+			input:              "ftp://coolvideo.com key/starter",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
