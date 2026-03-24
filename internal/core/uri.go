@@ -13,18 +13,18 @@ const (
 	Path
 )
 
-func CategorizeUri(uri string) URIType {
+func CategorizeUri(uri string) (URIType, string) {
 
 	parsedUri, _ := nUrl.Parse(uri)
 	scheme := strings.ToLower(parsedUri.Scheme)
 
 	switch scheme {
 	case "http", "https":
-		return Url
+		return Url, scheme
 	case "file", "":
-		return Path
+		return Path, scheme
 	default:
-		return Unsupported
+		return Unsupported, scheme
 	}
 }
 

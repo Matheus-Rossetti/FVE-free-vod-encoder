@@ -1,21 +1,96 @@
 package cli
 
-// import (
-// 	"testing"
+import (
+	"errors"
+	"log/slog"
+	"os"
+	"testing"
 
-// 	"github.com/Matheus-Rossetti/frevod/internal/core"
-// )
+	"github.com/Matheus-Rossetti/frevod/internal/core"
+)
 
-// func TestListenForInput(t *testing.T) {
-// 	testCases := []struct{
-// 		downloadQueue chan core.Job
-// 	}{{
-// 		downloadQueue: make(chan core.Job, 10),
-// 	},
+func TestValidateInput(t *testing.T) {
+	testCases := []struct {
+		name               string
+		input              string
+		expectedUriType    core.URIType
+		expectedUri        string
+		expectedKeyStarter string
+		initialErr         error
+		wantErr            bool
+	}{
+		{
+			name:               "Happy Path with URL",
+			input:              "http://coolvideo.com key/starter",
+			expectedUriType:    core.Url,
+			expectedUri:        "http://coolvideo.com",
+			expectedKeyStarter: "key/starter",
+			initialErr:         nil,
+			wantErr:            false,
+		},
+		{
+			name:               "Happy Path with Path",
+			input:              "/coolvideo.mp4 key/starter",
+			expectedUriType:    core.Path,
+			expectedUri:        "/coolvideo.mp4",
+			expectedKeyStarter: "key/starter",
+			initialErr:         nil,
+			wantErr:            false,
+		},
+		{
+			name:               "With initial error",
+			input:              "/coolvideo.mp4 key/starter",
+			expectedUriType:    core.Unsupported,
+			expectedUri:        "",
+			expectedKeyStarter: "",
+			initialErr:         errors.New("New Error!"),
+			wantErr:            true,
+		},
+		{
+			name:               "Inputing uri only",
+			input:              "http://coolvideo.com",
+			expectedUriType:    core.Unsupported,
+			expectedUri:        "",
+			expectedKeyStarter: "",
+			initialErr:         nil,
+			wantErr:            true,
+		},
+		{
+			name:               "Inputing more than just uri and key",
+			input:              "http://coolvideo.com key/starter something-that-shouldn't-be-here",
+			expectedUriType:    core.Unsupported,
+			expectedUri:        "",
+			expectedKeyStarter: "",
+			initialErr:         nil,
+			wantErr:            true,
+		},
+	}
 
-// 	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			cli := cli{
+				slog: slog.New(slog.NewTextHandler(os.Stdout, nil)),
+				err:  testCase.initialErr,
+			}
 
-// 	for _, testCase := range testCases {
-// 		t.Run("Testing input from cli", ListenForInput(testCase))
-// 	}
-// }
+			uriType, uri, keyStarter := cli.validateInput(testCase.input)
+
+			if uriType != testCase.expectedUriType {
+				t.Errorf("")
+			}
+
+			if uri != testCase.expectedUri {
+				t.Errorf("")
+			}
+
+			if keyStarter != testCase.expectedKeyStarter {
+				t.Errorf("")
+			}
+
+			hasErr := (cli.err != nil)
+			if hasErr != testCase.wantErr {
+				t.Errorf("")
+			}
+		})
+	}
+}

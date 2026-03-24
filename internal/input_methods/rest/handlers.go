@@ -27,7 +27,8 @@ func (rest *rest) videoHandler() http.HandlerFunc {
 			return
 		}
 
-		uriType := core.CategorizeUri(request.VideoUri)
+		// TODO this line is changed, check commit and refactor
+		uriType, _ := core.CategorizeUri(request.VideoUri)
 
 		job := core.NewJob()
 

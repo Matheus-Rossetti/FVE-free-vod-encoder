@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"os"
 	"time"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func (c *cli) Start() {
@@ -18,9 +16,9 @@ func (c *cli) Start() {
 			if !scanner.Scan() {
 				break
 			}
+
 			input := scanner.Text()
-			uri, keyStarter := c.validateInput(input)
-			uriType := core.CategorizeUri(uri)
+			uriType, uri, keyStarter := c.validateInput(input)
 			c.pushJob(uri, uriType, keyStarter)
 
 			if c.err != nil {
@@ -28,7 +26,6 @@ func (c *cli) Start() {
 				c.err = nil
 				continue
 			}
-			time.Sleep(time.Second) // avoid spam
 		}
 	}()
 
