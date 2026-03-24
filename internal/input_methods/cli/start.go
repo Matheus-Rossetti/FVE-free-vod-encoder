@@ -20,8 +20,7 @@ func (c *cli) Start() {
 			}
 			input := scanner.Text()
 			uri, keyStarter := c.validateInput(input)
-			var uriType core.URIType
-			uriType = core.CategorizeUri(uri)
+			uriType := core.CategorizeUri(uri)
 			c.pushJob(uri, uriType, keyStarter)
 
 			if c.err != nil {
