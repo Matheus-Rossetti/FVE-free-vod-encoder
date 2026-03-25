@@ -1,6 +1,6 @@
 input:
-  cli: true
-  rest: false
+  cli: false
+  rest: true
   
 encode:
   concurrent_encodings: 2
