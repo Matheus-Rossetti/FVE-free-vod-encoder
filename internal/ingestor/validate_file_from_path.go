@@ -1,4 +1,4 @@
-package downloader
+package ingestor
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ var (
 	ErrFindingLocalFile    = errors.New("failed to find local file")
 )
 
-func (d *downloader) validateFileFromPath(path string) (*os.File, error) {
+func (d *ingestor) validateFileFromPath(path string) (*os.File, error) {
 
 	// Format path
 	path = strings.TrimPrefix(path, "file://")

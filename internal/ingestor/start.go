@@ -1,4 +1,4 @@
-package downloader
+package ingestor
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ var (
 	ErrValidatingFileFromPath   = errors.New("failed local file validation")
 )
 
-func (d *downloader) Start() {
+func (d *ingestor) Start() {
 JobLoop:
 	for job := range d.downloadQueue {
 		d.slog.Info(fmt.Sprintf("Received a job from %v", job.DownloadJob.Source),

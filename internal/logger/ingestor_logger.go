@@ -10,15 +10,15 @@ import (
 	charmLog "github.com/charmbracelet/log"
 )
 
-func Uploader(id int) (*log.Logger, *slog.Logger) {
+func Ingestor(id int) (*log.Logger, *slog.Logger) {
 
 	styles := charmLog.DefaultStyles()
-	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#ff009d"))
+	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#5B2A86"))
 
 	charmLogger := charmLog.NewWithOptions(
 		os.Stderr,
 		charmLog.Options{
-			Prefix: fmt.Sprintf("<uploader %v>", id),
+			Prefix: fmt.Sprintf("<ingestor %v>", id),
 		})
 
 	charmLogger.SetStyles(styles)

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-	"github.com/Matheus-Rossetti/frevod/internal/downloader"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
+	"github.com/Matheus-Rossetti/frevod/internal/ingestor"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/logger"
@@ -21,9 +21,7 @@ import (
 )
 
 func main() {
-	// HELLO!
-	// THIS IS THE MAIN FUNCTION OF FREVOD
-	// IT ORCHESTRATES EVERYTHING
+	// WELLCOME TO THE FREVOD SOURCE CODE!
 
 	// SLEEPS ARE SO LOGS COME OUT IN THE RIGHT ORDER
 
@@ -83,7 +81,7 @@ func main() {
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings {
 		wg.Go(func() {
-			log, slog := logger.Uploader(index)
+			log, slog := logger.Ingestor(index)
 			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
 			uploader.Start()
 		})
@@ -103,8 +101,8 @@ func main() {
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings * 2 {
 		wg.Go(func() {
-			log, slog := logger.Downloader(index)
-			downloader := downloader.NewDownloader(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
+			log, slog := logger.Dispatcher(index)
+			downloader := ingestor.NewIngestor(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
 			downloader.Start()
 		})
 

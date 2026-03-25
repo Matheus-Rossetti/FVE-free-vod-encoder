@@ -1,4 +1,4 @@
-package downloader
+package ingestor
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-type downloader struct {
+type ingestor struct {
 	ctx           context.Context
 	log           *log.Logger
 	slog          *slog.Logger
@@ -20,7 +20,7 @@ type downloader struct {
 	encodeQueue   chan<- *core.Job
 }
 
-func NewDownloader(
+func NewIngestor(
 	ctx context.Context,
 	log *log.Logger,
 	slog *slog.Logger,
@@ -28,9 +28,9 @@ func NewDownloader(
 	filePool chan *os.File,
 	id int,
 	downloadQueue <-chan *core.Job,
-	encodeQueue chan<- *core.Job) *downloader {
+	encodeQueue chan<- *core.Job) *ingestor {
 
-	return &downloader{
+	return &ingestor{
 		ctx:           ctx,
 		log:           log,
 		slog:          slog,
