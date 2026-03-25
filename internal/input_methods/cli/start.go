@@ -19,7 +19,7 @@ func (c *cli) Start() {
 
 			input := scanner.Text()
 			uriType, uri, keyStarter := c.validateInput(input)
-			c.pushJob(uri, uriType, keyStarter)
+			c.pushJob(uriType, uri, keyStarter)
 
 			if c.err != nil {
 				c.slog.Warn("ignoring input", "why", c.err.Error())

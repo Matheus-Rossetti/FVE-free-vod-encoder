@@ -2,7 +2,7 @@ package cli
 
 import "github.com/Matheus-Rossetti/frevod/internal/core"
 
-func (c *cli) pushJob(uri string, uriType core.URIType, keyStarter string) {
+func (c *cli) pushJob(uriType core.URIType, uri, keyStarter string) {
 	if c.err != nil {
 		return
 	}

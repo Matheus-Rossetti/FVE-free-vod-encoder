@@ -20,7 +20,7 @@ func TestValidateInput(t *testing.T) {
 		wantErr            bool
 	}{
 		{
-			name:               "valid URL and key",
+			name:               "valid url and key",
 			input:              "http://coolvideo.com key/starter",
 			expectedUriType:    core.Url,
 			expectedUri:        "http://coolvideo.com",
@@ -47,7 +47,7 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            true,
 		},
 		{
-			name:               "with uri only",
+			name:               "with less than 2 args",
 			input:              "http://coolvideo.com",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
@@ -56,7 +56,7 @@ func TestValidateInput(t *testing.T) {
 			wantErr:            true,
 		},
 		{
-			name:               "with more than uri and key",
+			name:               "with more than url and key",
 			input:              "http://coolvideo.com key/starter something-that-shouldn't-be-here",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
@@ -67,6 +67,15 @@ func TestValidateInput(t *testing.T) {
 		{
 			name:               "with unsupported uri",
 			input:              "ftp://coolvideo.com key/starter",
+			expectedUriType:    core.Unsupported,
+			expectedUri:        "ftp://coolvideo.com",
+			expectedKeyStarter: "",
+			initialErr:         nil,
+			wantErr:            true,
+		},
+		{
+			name:               "with empty input",
+			input:              "",
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
@@ -84,22 +93,87 @@ func TestValidateInput(t *testing.T) {
 
 			uriType, uri, keyStarter := cli.validateInput(testCase.input)
 
-			if uriType != testCase.expectedUriType {
-				t.Errorf("")
+			if testCase.expectedUriType != uriType {
+				t.Errorf("expected URIType %v, got %v", testCase.expectedUriType, uriType)
 			}
 
-			if uri != testCase.expectedUri {
-				t.Errorf("")
+			if testCase.expectedUri != uri {
+				t.Errorf("expected uri %v, got %v", testCase.expectedUri, uri)
 			}
 
-			if keyStarter != testCase.expectedKeyStarter {
-				t.Errorf("")
+			if testCase.expectedKeyStarter != keyStarter {
+				t.Errorf("expected keystarter %v, got %v", testCase.expectedKeyStarter, keyStarter)
 			}
 
 			hasErr := (cli.err != nil)
-			if hasErr != testCase.wantErr {
-				t.Errorf("")
+			if testCase.wantErr != hasErr {
+				t.Errorf("expected error presence to be %v, got %v", testCase.wantErr, hasErr)
 			}
 		})
+	}
+}
+
+func TestPushJob(t *testing.T) {
+	testCases := []struct {
+		name        string
+		source      string
+		uriType     core.URIType
+		uri         string
+		keyStarter  string
+		expectedJob core.Job
+	}{
+		{
+			name:       "correct job from cli",
+			uriType:    core.Url,
+			uri:        "https://mycoolvideo.com",
+			keyStarter: "key/starter",
+			expectedJob: core.Job{
+				DownloadJob: core.DownloadJob{
+					Source:   "cli",
+					UriType:  core.Url,
+					VideoUri: "https://mycoolvideo.com",
+				},
+				UploadJob: core.UploadJob{
+					KeyStarter: "key/starter",
+				},
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+
+		queue := make(chan *core.Job, 2)
+
+		cli := cli{
+			downloadQueue: queue,
+		}
+
+		cli.pushJob(tt.uriType, tt.uri, tt.keyStarter)
+
+		job := <-queue
+
+		if tt.expectedJob.DownloadJob.Source != job.DownloadJob.Source {
+			t.Errorf("expected source to be %v, got %v",
+				tt.expectedJob.DownloadJob.Source,
+				job.DownloadJob.Source)
+		}
+
+		if tt.expectedJob.DownloadJob.UriType != job.DownloadJob.UriType {
+			t.Errorf("expected uri type to be %v, got %v",
+				tt.expectedJob.DownloadJob.UriType,
+				job.DownloadJob.UriType)
+		}
+
+		if tt.expectedJob.DownloadJob.VideoUri != job.DownloadJob.VideoUri {
+			t.Errorf("expected uri to be %v, got %v",
+				tt.expectedJob.DownloadJob.VideoUri,
+				job.DownloadJob.VideoUri)
+		}
+
+		if tt.expectedJob.UploadJob.KeyStarter != job.UploadJob.KeyStarter {
+			t.Errorf("expected key starter to be %v, got %v",
+				tt.expectedJob.UploadJob.KeyStarter,
+				job.UploadJob.KeyStarter)
+		}
 	}
 }
