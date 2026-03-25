@@ -1,6 +1,6 @@
-package main
+package core
 
 // Move this out'a here
 func (f *frevod) Greet() {
-	f.log.Println("Hello!")
+	f.Log.Println("Hello!")
 }

@@ -1,24 +1,22 @@
-package main
+package core
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func (f *frevod) createDownloadFile(dir string, index int) *os.File {
 	slotName := fmt.Sprintf("%v/video-%v", dir, index)
 	file, err := os.Create(slotName)
 	if err != nil {
-		f.log.Fatal("Failed when creating temp file to store video from download stream", "err", err)
+		f.Log.Fatal("Failed when creating temp file to store video from download stream", "err", err)
 	}
 
 	return file
 }
 
-func (f *frevod) PrepareStorageFiles(options *core.Options) []*os.File {
+func (f *frevod) PrepareStorageFiles(options *Options) []*os.File {
 	dir := "storage_files"
 	os.Mkdir(dir, 0700)
 	var downloadSlots []*os.File
@@ -41,6 +39,6 @@ func (f *frevod) CloseAndDeleteStorageFiles(filePool <-chan *os.File) {
 		file.Close()
 		absoluteFilePath, _ := filepath.Abs(file.Name())
 		os.Remove(absoluteFilePath)
-		f.slog.Warn("Closed and Deleted", "file", file.Name())
+		f.Slog.Warn("Closed and Deleted", "file", file.Name())
 	}
 }

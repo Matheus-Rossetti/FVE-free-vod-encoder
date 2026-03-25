@@ -58,30 +58,31 @@ func TestValidateBody(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			body := io.NopCloser(strings.NewReader(tt.body))
 
-		body := io.NopCloser(strings.NewReader(tt.body))
+			uriType, uri, keyStarter, status, err := validateBody(body)
 
-		uriType, uri, keyStarter, status, err := validateBody(body)
+			if tt.expectedUriType != uriType {
+				t.Errorf("expected uri type to be %v, got %v", tt.expectedUri, uriType)
+			}
 
-		if tt.expectedUriType != uriType {
-			t.Errorf("expected uri type to be %v, got %v", tt.expectedUri, uriType)
-		}
+			if tt.expectedUri != uri {
+				t.Errorf("expected uri to be %v, got %v", tt.expectedUri, uri)
+			}
 
-		if tt.expectedUri != uri {
-			t.Errorf("expected uri to be %v, got %v", tt.expectedUri, uri)
-		}
+			if tt.expectedKeyStarter != keyStarter {
+				t.Errorf("expected key starter to be %v, got %v", tt.expectedKeyStarter, keyStarter)
+			}
 
-		if tt.expectedKeyStarter != keyStarter {
-			t.Errorf("expected key starter to be %v, got %v", tt.expectedKeyStarter, keyStarter)
-		}
+			if tt.expectedStatus != status {
+				t.Errorf("expected status to be %v, got %v", tt.expectedStatus, status)
+			}
 
-		if tt.expectedStatus != status {
-			t.Errorf("expected status to be %v, got %v", tt.expectedStatus, status)
-		}
-
-		hasErr := (err != nil)
-		if tt.wantErr != hasErr {
-			t.Errorf("expected error to be %v, got %v", tt.wantErr, hasErr)
-		}
+			hasErr := (err != nil)
+			if tt.wantErr != hasErr {
+				t.Errorf("expected error to be %v, got %v", tt.wantErr, hasErr)
+			}
+		})
 	}
 }

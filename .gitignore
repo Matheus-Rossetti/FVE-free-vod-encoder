@@ -4,4 +4,5 @@
 /downloaded-videos/*
 /download-slots/*
 docker-compose.yml
+config.yaml
 /storage_files/*

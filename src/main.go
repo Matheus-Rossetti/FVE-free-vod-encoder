@@ -25,7 +25,7 @@ func main() {
 
 	// SLEEPS ARE SO LOGS COME OUT IN THE RIGHT ORDER
 
-	frevod := startFrevod(logger.Frevod())
+	frevod := core.StartFrevod(logger.Frevod())
 	frevod.CheckForFFmpegBin()
 	frevod.Greet()
 
@@ -50,7 +50,7 @@ func main() {
 		// If we close the encoder when downloader is pushing a
 		// job to it, the push will fail and leave orphan files.
 		<-ctx.Done()
-		frevod.slog.Warn("Shutdown signal received!")
+		frevod.Slog.Warn("Shutdown signal received!")
 
 		time.Sleep(time.Second / 2)
 		close(downloadQueue)
@@ -133,5 +133,5 @@ func main() {
 	os.RemoveAll("storage_files")
 	stop() // ctx
 
-	frevod.slog.Info("Everything's clean, bye :)")
+	frevod.Slog.Info("Everything's clean, bye :)")
 }
