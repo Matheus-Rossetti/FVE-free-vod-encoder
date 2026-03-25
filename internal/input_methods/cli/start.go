@@ -19,7 +19,7 @@ func (c *cli) Start() {
 
 			uriType, uri, keyStarter, err := c.validateInput(scanner.Text())
 			if err != nil {
-				c.slog.Warn("ignoring input", "why", err.Error())
+				c.slog.Error("ignoring input", "why", err.Error())
 				continue
 			}
 
