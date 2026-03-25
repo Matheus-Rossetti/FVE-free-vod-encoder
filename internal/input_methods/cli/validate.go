@@ -25,7 +25,7 @@ func (c *cli) validateInput(input string) (core.URIType, string, string, error) 
 	// Then key
 	if len(parts) != 2 {
 		c.slog.Warn("invalid input format", "expected", "URI KEY", "got", input)
-		return uriType, uri, "", fmt.Errorf("input has more than 2 parts")
+		return uriType, uri, "", fmt.Errorf("input needs two parts")
 	}
 	keyStarter := parts[1]
 

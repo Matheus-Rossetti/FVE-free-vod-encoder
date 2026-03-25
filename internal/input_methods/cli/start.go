@@ -7,10 +7,8 @@ import (
 )
 
 func (c *cli) Start() {
-	c.slog.Info("Starting...")
-
 	go func() {
-		c.slog.Info("Frevod is waiting for URIs in your terminal! Use: videoUri key")
+		c.slog.Info("Frevod is waiting for URIs in your terminal! Use: uri key")
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
 			if !scanner.Scan() {

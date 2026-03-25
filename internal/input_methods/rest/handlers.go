@@ -1,47 +1,22 @@
 package rest
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func (rest *rest) videoHandler() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
 
-		var request struct {
-			VideoUri   string `json:"video_uri"`
-			KeyStarter string `json:"key_starter"`
-		}
+	// might refactor to return a struct
+	uriType, uri, keyStarter, status, err := validateBody(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), status)
+		return
+	}
 
-		err := json.NewDecoder(r.Body).Decode(&request)
-		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
-			return
-		}
+	rest.pushJob(uriType, uri, keyStarter)
 
-		if request.VideoUri == "" || request.KeyStarter == "" {
-			http.Error(w, "Needs 'video_uri' and 'key_starter'", http.StatusUnprocessableEntity)
-			return
-		}
-
-		// TODO this line is changed, check commit and refactor
-		uriType, _ := core.CategorizeUri(request.VideoUri)
-
-		job := core.NewJob()
-
-		job.DownloadJob.Source = "REST"
-		job.DownloadJob.UriType = uriType
-		job.DownloadJob.VideoUri = request.VideoUri
-
-		job.UploadJob.KeyStarter = request.KeyStarter
-
-		rest.downloadQueue <- job
-
-		fmt.Fprintf(w, "%v added to internal queue and will be processed soon!", request.VideoUri)
-	})
+	fmt.Fprintf(w, "job added to internal queue!")
 }
 
 func (rest *rest) checkHealth(w http.ResponseWriter, r *http.Request) {

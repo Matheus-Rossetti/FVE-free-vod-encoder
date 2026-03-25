@@ -1,5 +1,7 @@
 package core
 
+import "os"
+
 type Job struct {
 	DownloadJob DownloadJob
 	EncodeJob   EncodeJob
@@ -12,4 +14,22 @@ func NewJob() *Job {
 		EncodeJob:   EncodeJob{},
 		UploadJob:   UploadJob{},
 	}
+}
+
+type DownloadJob struct {
+	VideoUri     string
+	UriType      URIType
+	Source       string
+	UploadMethod string
+}
+
+type EncodeJob struct {
+	AbsoluteVideoPath string
+	File              *os.File
+	DownloadedFile    bool
+}
+
+type UploadJob struct {
+	FromDir    string
+	KeyStarter string
 }
