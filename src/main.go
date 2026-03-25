@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/Matheus-Rossetti/frevod/internal/dispatcher"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
 	"github.com/Matheus-Rossetti/frevod/internal/ingestor"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
@@ -17,7 +18,6 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/options"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/local"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/s3"
-	"github.com/Matheus-Rossetti/frevod/internal/uploader"
 )
 
 func main() {
@@ -63,7 +63,7 @@ func main() {
 	})
 
 	// START OUTPUT METHODS
-	storageProviders := make(map[string]uploader.StorageProvider) // we pass storageProviders to uploader.Start
+	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to uploader.Start
 	if config.Upload.Local.Use {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Local()
@@ -82,7 +82,7 @@ func main() {
 	for index := range config.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Ingestor(index)
-			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
+			uploader := dispatcher.NewDispatcher(ctx, log, slog, config, index, uploadQueue, storageProviders)
 			uploader.Start()
 		})
 	}

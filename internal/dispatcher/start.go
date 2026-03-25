@@ -1,4 +1,4 @@
-package uploader
+package dispatcher
 
 import (
 	"context"
@@ -17,9 +17,9 @@ var (
 )
 
 // This function is getting messier by de day, refactor or be ashamed.
-func (u *uploader) Start() {
-	for job := range u.uploadQueue {
-		u.slog.Info("Received a job! Walking dir", "dir", job.UploadJob.FromDir, "id", u.id)
+func (d *dispatcher) Start() {
+	for job := range d.uploadQueue {
+		d.slog.Info("Received a job! Walking dir", "dir", job.UploadJob.FromDir, "id", d.id)
 
 		// CREATE UPLOAD POOL
 		uploadPool := make(chan struct{}, concurrentUploads)
@@ -29,8 +29,8 @@ func (u *uploader) Start() {
 
 		var wg sync.WaitGroup
 
-		for providerName, provider := range u.storageProviders {
-			providerContext, cancel := context.WithCancel(u.ctx)
+		for providerName, provider := range d.storageProviders {
+			providerContext, cancel := context.WithCancel(d.ctx)
 
 			var uploadedFiles []string
 			var mu sync.Mutex
@@ -57,14 +57,14 @@ func (u *uploader) Start() {
 						absolutePath, err := filepath.Abs(path)
 						if err != nil {
 							cancel()
-							u.slog.Error(ErrGettingAbsolutePath.Error(), "err", err, "id", u.id)
+							d.slog.Error(ErrGettingAbsolutePath.Error(), "err", err, "id", d.id)
 							return fmt.Errorf("%w: %v", ErrGettingAbsolutePath, err)
 						}
 
 						err = provider.Upload(providerContext, key, absolutePath)
 						if err != nil {
 							cancel() // stops the walkdir
-							u.slog.Error(ErrUploadingFile.Error(), "err", err, "id", u.id)
+							d.slog.Error(ErrUploadingFile.Error(), "err", err, "id", d.id)
 							return fmt.Errorf("%w: %v", ErrUploadingFile, err)
 						}
 
@@ -83,19 +83,19 @@ func (u *uploader) Start() {
 			if providerContext.Err() != nil { // canceling the original ctx (using ctrl + c) will also cancel the providerContext
 				err := provider.HandleError(uploadedFiles)
 				if err != nil {
-					u.slog.Error("Couldn't handle error, sorry :(")
+					d.slog.Error("Couldn't handle error, sorry :(")
 				} else {
-					u.slog.Info("Finished cleanup!")
+					d.slog.Info("Finished cleanup!")
 				}
 			}
 
-			u.slog.Info("Finished upliading!", "to", providerName, "dir", job.UploadJob.FromDir, "id", u.id)
+			d.slog.Info("Finished upliading!", "to", providerName, "dir", job.UploadJob.FromDir, "id", d.id)
 		} // provider loop
 
-		go DeleteROT(job.UploadJob.FromDir)
-		u.slog.Info("Finished!", "id", u.id)
+		go d.DeleteROT(job.UploadJob.FromDir)
+		d.slog.Info("Finished!", "id", d.id)
 	}
 
 	// After queue closes
-	u.slog.Info("Shutting down...", "id", u.id)
+	d.slog.Info("Shutting down...", "id", d.id)
 }

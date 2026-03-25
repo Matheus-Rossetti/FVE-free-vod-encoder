@@ -1,4 +1,4 @@
-package uploader
+package dispatcher
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-type uploader struct {
+type dispatcher struct {
 	ctx              context.Context
 	log              *log.Logger
 	slog             *slog.Logger
@@ -18,7 +18,7 @@ type uploader struct {
 	storageProviders map[string]StorageProvider
 }
 
-func NewUploader(
+func NewDispatcher(
 	ctx context.Context,
 	log *log.Logger,
 	slog *slog.Logger,
@@ -26,8 +26,8 @@ func NewUploader(
 	id int,
 	uploadQueue <-chan *core.Job,
 	storageProviders map[string]StorageProvider,
-) *uploader {
-	return &uploader{
+) *dispatcher {
+	return &dispatcher{
 		ctx:              ctx,
 		log:              log,
 		slog:             slog,
