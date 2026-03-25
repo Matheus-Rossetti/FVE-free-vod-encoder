@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"log/slog"
 	"os"
 	"testing"
@@ -16,7 +15,6 @@ func TestValidateInput(t *testing.T) {
 		expectedUriType    core.URIType
 		expectedUri        string
 		expectedKeyStarter string
-		initialErr         error
 		wantErr            bool
 	}{
 		{
@@ -25,7 +23,6 @@ func TestValidateInput(t *testing.T) {
 			expectedUriType:    core.Url,
 			expectedUri:        "http://coolvideo.com",
 			expectedKeyStarter: "key/starter",
-			initialErr:         nil,
 			wantErr:            false,
 		},
 		{
@@ -34,34 +31,22 @@ func TestValidateInput(t *testing.T) {
 			expectedUriType:    core.Path,
 			expectedUri:        "/coolvideo.mp4",
 			expectedKeyStarter: "key/starter",
-			initialErr:         nil,
 			wantErr:            false,
 		},
 		{
-			name:               "with initial error",
-			input:              "/coolvideo.mp4 key/starter",
-			expectedUriType:    core.Unsupported,
-			expectedUri:        "",
-			expectedKeyStarter: "",
-			initialErr:         errors.New("New Error!"),
-			wantErr:            true,
-		},
-		{
-			name:               "with less than 2 args",
+			name:               "with just uri (no key)",
 			input:              "http://coolvideo.com",
-			expectedUriType:    core.Unsupported,
-			expectedUri:        "",
+			expectedUriType:    core.Url,
+			expectedUri:        "http://coolvideo.com",
 			expectedKeyStarter: "",
-			initialErr:         nil,
 			wantErr:            true,
 		},
 		{
 			name:               "with more than url and key",
 			input:              "http://coolvideo.com key/starter something-that-shouldn't-be-here",
-			expectedUriType:    core.Unsupported,
-			expectedUri:        "",
+			expectedUriType:    core.Url,
+			expectedUri:        "http://coolvideo.com",
 			expectedKeyStarter: "",
-			initialErr:         nil,
 			wantErr:            true,
 		},
 		{
@@ -70,7 +55,6 @@ func TestValidateInput(t *testing.T) {
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "ftp://coolvideo.com",
 			expectedKeyStarter: "",
-			initialErr:         nil,
 			wantErr:            true,
 		},
 		{
@@ -79,7 +63,6 @@ func TestValidateInput(t *testing.T) {
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
-			initialErr:         nil,
 			wantErr:            true,
 		},
 	}
@@ -88,10 +71,9 @@ func TestValidateInput(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			cli := cli{
 				slog: slog.New(slog.NewTextHandler(os.Stdout, nil)),
-				err:  testCase.initialErr,
 			}
 
-			uriType, uri, keyStarter := cli.validateInput(testCase.input)
+			uriType, uri, keyStarter, err := cli.validateInput(testCase.input)
 
 			if testCase.expectedUriType != uriType {
 				t.Errorf("expected URIType %v, got %v", testCase.expectedUriType, uriType)
@@ -105,7 +87,7 @@ func TestValidateInput(t *testing.T) {
 				t.Errorf("expected keystarter %v, got %v", testCase.expectedKeyStarter, keyStarter)
 			}
 
-			hasErr := (cli.err != nil)
+			hasErr := (err != nil)
 			if testCase.wantErr != hasErr {
 				t.Errorf("expected error presence to be %v, got %v", testCase.wantErr, hasErr)
 			}

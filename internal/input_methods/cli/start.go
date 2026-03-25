@@ -17,15 +17,13 @@ func (c *cli) Start() {
 				break
 			}
 
-			input := scanner.Text()
-			uriType, uri, keyStarter := c.validateInput(input)
-			c.pushJob(uriType, uri, keyStarter)
-
-			if c.err != nil {
-				c.slog.Warn("ignoring input", "why", c.err.Error())
-				c.err = nil
+			uriType, uri, keyStarter, err := c.validateInput(scanner.Text())
+			if err != nil {
+				c.slog.Warn("ignoring input", "why", err.Error())
 				continue
 			}
+
+			c.pushJob(uriType, uri, keyStarter)
 		}
 	}()
 
