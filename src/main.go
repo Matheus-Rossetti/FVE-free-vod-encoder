@@ -83,7 +83,7 @@ func main() {
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings {
 		wg.Go(func() {
-			log, slog := logger.Uploader()
+			log, slog := logger.Uploader(index)
 			uploader := uploader.NewUploader(ctx, log, slog, config, index, uploadQueue, storageProviders)
 			uploader.Start()
 		})
@@ -93,7 +93,7 @@ func main() {
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings {
 		wg.Go(func() {
-			log, slog := logger.Encoder()
+			log, slog := logger.Encoder(index)
 			encoder := encoder.NewEncoder(ctx, log, slog, config, filePool, index, encodeQueue, uploadQueue)
 			encoder.Start()
 		})
@@ -103,7 +103,7 @@ func main() {
 	time.Sleep(time.Second / 2)
 	for index := range config.Encode.ConcurrentEncodings * 2 {
 		wg.Go(func() {
-			log, slog := logger.Downloader()
+			log, slog := logger.Downloader(index)
 			downloader := downloader.NewDownloader(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
 			downloader.Start()
 		})

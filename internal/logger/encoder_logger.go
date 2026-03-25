@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -9,7 +10,7 @@ import (
 	charmLog "github.com/charmbracelet/log"
 )
 
-func Encoder() (*log.Logger, *slog.Logger) {
+func Encoder(id int) (*log.Logger, *slog.Logger) {
 
 	styles := charmLog.DefaultStyles()
 	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#ff6600"))
@@ -17,7 +18,7 @@ func Encoder() (*log.Logger, *slog.Logger) {
 	charmLogger := charmLog.NewWithOptions(
 		os.Stderr,
 		charmLog.Options{
-			Prefix: "<encoder>",
+			Prefix: fmt.Sprintf("<encoder %v>", id),
 		})
 
 	charmLogger.SetStyles(styles)

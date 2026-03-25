@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -9,7 +10,7 @@ import (
 	charmLog "github.com/charmbracelet/log"
 )
 
-func Downloader() (*log.Logger, *slog.Logger) {
+func Downloader(id int) (*log.Logger, *slog.Logger) {
 
 	styles := charmLog.DefaultStyles()
 	styles.Prefix = lipgloss.NewStyle().Bold(true).Faint(false).Foreground(lipgloss.Color("#5B2A86"))
@@ -17,7 +18,7 @@ func Downloader() (*log.Logger, *slog.Logger) {
 	charmLogger := charmLog.NewWithOptions(
 		os.Stderr,
 		charmLog.Options{
-			Prefix: "<downloader>",
+			Prefix: fmt.Sprintf("<downloader %v>", id),
 		})
 
 	charmLogger.SetStyles(styles)
