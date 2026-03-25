@@ -9,7 +9,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func validateBody(body io.Reader) (core.URIType, string, string, int, error) {
+func validateBody(body io.ReadCloser) (core.URIType, string, string, int, error) {
 
 	var request struct {
 		Uri        string `json:"uri"`
@@ -36,8 +36,8 @@ func validateBody(body io.Reader) (core.URIType, string, string, int, error) {
 	uriType, scheme := core.CategorizeUri(request.Uri)
 	if uriType == core.Unsupported {
 		return uriType,
-			request.Uri,
-			request.KeyStarter,
+			"",
+			"",
 			http.StatusUnprocessableEntity,
 			fmt.Errorf("unsupported uri scheme (%v), supported schemes include: http, https, file and local paths.", scheme)
 	}

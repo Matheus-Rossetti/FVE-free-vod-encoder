@@ -11,11 +11,12 @@ func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
 	uriType, uri, keyStarter, status, err := validateBody(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), status)
+		rest.slog.Error("ignoring request", "why", err.Error())
 		return
 	}
 
 	rest.pushJob(uriType, uri, keyStarter)
-
+	rest.slog.Info("added a job to the queue!", "uri", uri, "key starter", keyStarter)
 	fmt.Fprintf(w, "job added to internal queue!")
 }
 

@@ -89,7 +89,7 @@ func TestValidateInput(t *testing.T) {
 
 			hasErr := (err != nil)
 			if testCase.wantErr != hasErr {
-				t.Errorf("expected error presence to be %v, got %v", testCase.wantErr, hasErr)
+				t.Errorf("expected error to be %v, got %v", testCase.wantErr, hasErr)
 			}
 		})
 	}
