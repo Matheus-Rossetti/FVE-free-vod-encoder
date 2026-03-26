@@ -1,6 +1,7 @@
-package options
+package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -9,16 +10,13 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-func (o *options) ParseOptions() *core.Options {
-	o.slog.Info("Parsing options...")
-	options := &core.Options{}
+func LoadInto(options *core.Options) error {
 	validate := validator.New()
 	// TODO If config.yml file isn't found, or is malformed
 	// get options from charm's Huh lib (terminal form)
 	// add option to save that config into a config.yml
 
-	if o.IsRunningInDocker() {
-		o.slog.Info("Running in Docker!")
+	if isRunningInDocker() {
 
 		options.Input.Cli = false
 		options.Input.REST = true
@@ -32,7 +30,7 @@ func (o *options) ParseOptions() *core.Options {
 
 		ssl, err := strconv.ParseBool(os.Getenv("USE_SSL"))
 		if err != nil {
-			o.log.Fatal("Failed to get USE_SSL")
+			return fmt.Errorf("Failed to get USE_SSL")
 		}
 		options.Upload.S3.UseSSL = ssl
 
@@ -46,11 +44,8 @@ func (o *options) ParseOptions() *core.Options {
 
 		err = validate.Struct(options)
 		if err != nil {
-			o.slog.Error("Validation error", "err", err)
-			o.log.Fatal("Finishing program.")
+			fmt.Errorf("Validation error", "err", err)
 		}
-
-		return options
 	}
 
 	// Standard options
@@ -85,25 +80,18 @@ func (o *options) ParseOptions() *core.Options {
 
 	configFile, err := os.ReadFile("config.yaml")
 	if err != nil {
-		o.slog.Warn("config.yml file not found, proceeding standard options.")
-		return options
+		return fmt.Errorf("config.yml file not found, proceeding standard options.")
 	}
 
 	err = yaml.Unmarshal(configFile, options)
 	if err != nil {
-		o.slog.Error("Failed to parse config.yaml, proceeding with standard options.")
-		return options
+		return fmt.Errorf("Failed to parse config.yaml, proceeding with standard options.")
 	}
 
 	err = validate.Struct(options)
 	if err != nil {
-		o.slog.Error("Validation error", "err", err)
-		o.log.Fatal("Finishing program.")
+		return fmt.Errorf("Validation error", "err", err)
 	}
 
-	o.slog.Info("Found config.yaml, proceeding with custom options.")
-
-	// TODO output options.
-
-	return options
+	return nil
 }

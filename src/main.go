@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Matheus-Rossetti/frevod/internal/config"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/Matheus-Rossetti/frevod/internal/dispatcher"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
@@ -15,7 +16,6 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
 	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/logger"
-	"github.com/Matheus-Rossetti/frevod/internal/options"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/local"
 	"github.com/Matheus-Rossetti/frevod/internal/output_methods/s3"
 )
@@ -29,22 +29,25 @@ func main() {
 	frevod.CheckForFFmpegBin()
 	frevod.Greet()
 
-	options := options.NewOptions(logger.Options())
-	config := options.ParseOptions()
+	options := core.NewOptions()
+	err := config.LoadInto(options)
+	// move this fatal into .LoadInto
+	if err != nil {
+		frevod.Log.Fatal("Failed to load config", err.Error())
+	}
+	frevod.SetOptions(options)
 
 	// START FILE POOL (used by downloader and encoder)
-	filePool := make(chan *os.File, config.Encode.ConcurrentEncodings*2)
-	files := frevod.PrepareStorageFiles(config)
+	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
+	files := frevod.PrepareStorageFiles(options)
 	frevod.FillFilePool(files, filePool)
 
 	// START CONTEXT - LISTEN FOR SIGINT AND SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	var wg sync.WaitGroup
 
-	// MAKE QUEUES
-	downloadQueue := make(chan *core.Job, 999)
-	encodeQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
-	uploadQueue := make(chan *core.Job, config.Encode.ConcurrentEncodings)
+	ingestQueue, encodeQueue, dispatchQueue := frevod.StartQueues()
+
 	wg.Go(func() {
 		// The order in which the queues are closed is important
 		// If we close the encoder when downloader is pushing a
@@ -53,75 +56,72 @@ func main() {
 		frevod.Slog.Warn("Shutdown signal received!")
 
 		time.Sleep(time.Second / 2)
-		close(downloadQueue)
+		close(ingestQueue)
 
 		time.Sleep(time.Second / 2)
 		close(encodeQueue)
 
 		time.Sleep(time.Second / 2)
-		close(uploadQueue)
+		close(dispatchQueue)
 	})
 
 	// START OUTPUT METHODS
 	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to uploader.Start
-	if config.Upload.Local.Use {
+	if options.Upload.Local.Use {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Local()
-		provider := local.Start(log, slog, config)
+		provider := local.Start(log, slog, options)
 		storageProviders["local"] = provider
 	}
-	if config.Upload.S3.Use {
+	if options.Upload.S3.Use {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.S3()
-		provider := s3.Start(log, slog, config)
+		provider := s3.Start(log, slog, options)
 		storageProviders["s3"] = provider
 	}
 
-	// START UPLOAD
 	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings {
+	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Ingestor(index)
-			uploader := dispatcher.NewDispatcher(ctx, log, slog, config, index, uploadQueue, storageProviders)
+			uploader := dispatcher.NewDispatcher(ctx, log, slog, options, index, dispatchQueue, storageProviders)
 			uploader.Start()
 		})
 	}
 
-	// START ENCODERS
 	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings {
+	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Encoder(index)
-			encoder := encoder.NewEncoder(ctx, log, slog, config, filePool, index, encodeQueue, uploadQueue)
+			encoder := encoder.NewEncoder(ctx, log, slog, options, filePool, index, encodeQueue, dispatchQueue)
 			encoder.Start()
 		})
 	}
 
-	// START DOWNLOADERS
 	time.Sleep(time.Second / 2)
-	for index := range config.Encode.ConcurrentEncodings * 2 {
+	for index := range options.Encode.ConcurrentEncodings * 2 {
 		wg.Go(func() {
 			log, slog := logger.Dispatcher(index)
-			downloader := ingestor.NewIngestor(ctx, log, slog, config, filePool, index, downloadQueue, encodeQueue)
+			downloader := ingestor.NewIngestor(ctx, log, slog, options, filePool, index, ingestQueue, encodeQueue)
 			downloader.Start()
 		})
 
 	}
 
 	// START INPUT METHODS
-	if config.Input.Cli {
+	if options.Input.Cli {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Cli()
 		wg.Go(func() {
-			cli := cli.NewCli(ctx, log, slog, downloadQueue)
+			cli := cli.NewCli(ctx, log, slog, ingestQueue)
 			cli.Start()
 		})
 	}
-	if config.Input.REST {
+	if options.Input.REST {
 		time.Sleep(time.Second / 2)
 		log, slog := logger.Rest()
 		wg.Go(func() {
-			rest := rest.NewRest(ctx, log, slog, ":8080", downloadQueue)
+			rest := rest.NewRest(ctx, log, slog, ":8080", ingestQueue)
 			rest.Start()
 		})
 	}

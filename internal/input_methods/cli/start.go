@@ -21,7 +21,7 @@ func (c *cli) Start() {
 				continue
 			}
 
-			c.pushJob(uriType, uri, keyStarter)
+			c.ingestQueue.PushJob(uriType, uri, keyStarter, "cli")
 		}
 	}()
 

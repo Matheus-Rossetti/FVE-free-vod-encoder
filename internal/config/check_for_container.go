@@ -1,9 +1,9 @@
-package options
+package config
 
 import "os"
 
 // TODO Refactor to also check for podman
-func (o *options) IsRunningInDocker() bool {
+func isRunningInDocker() bool {
 	_, err := os.Stat("/.dockerenv")
 	if err != nil {
 		return false

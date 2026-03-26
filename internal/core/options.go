@@ -8,6 +8,10 @@ type Options struct {
 	// ExposeMetrict bool `yaml:"expose_metrics"`
 }
 
+func NewOptions() *Options {
+	return &Options{}
+}
+
 type InputOptions struct {
 	Cli  bool `yaml:"cli"`
 	REST bool `yaml:"rest"`
