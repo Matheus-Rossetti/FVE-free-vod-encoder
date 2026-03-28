@@ -8,15 +8,17 @@ import (
 func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// might refactor to return a struct
-	uriType, uri, keyStarter, status, err := validateBody(r.Body)
+	uriType, uri, keyStarter, err := validateBody(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), status)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		rest.slog.Error("ignoring request", "why", err.Error())
 		return
 	}
 
 	rest.downloadQueue.PushJob(uriType, uri, keyStarter, "REST")
 	rest.slog.Info("added a job to the queue!", "uri", uri, "key starter", keyStarter)
+
+	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "job added to internal queue!")
 }
 

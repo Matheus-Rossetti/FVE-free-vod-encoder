@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func validateBody(body io.ReadCloser) (core.URIType, string, string, int, error) {
+func validateBody(body io.ReadCloser) (core.URIType, string, string, error) {
 
 	var request struct {
 		Uri        string `json:"uri"`
@@ -21,7 +20,6 @@ func validateBody(body io.ReadCloser) (core.URIType, string, string, int, error)
 		return core.Unsupported,
 			"",
 			"",
-			http.StatusUnprocessableEntity,
 			fmt.Errorf("invalid json")
 	}
 
@@ -29,7 +27,6 @@ func validateBody(body io.ReadCloser) (core.URIType, string, string, int, error)
 		return core.Unsupported,
 			"",
 			"",
-			http.StatusUnprocessableEntity,
 			fmt.Errorf("needs uri and key_starter")
 	}
 
@@ -38,9 +35,8 @@ func validateBody(body io.ReadCloser) (core.URIType, string, string, int, error)
 		return uriType,
 			"",
 			"",
-			http.StatusUnprocessableEntity,
 			fmt.Errorf("unsupported uri scheme (%v), supported schemes include: http, https, file and local paths.", scheme)
 	}
 
-	return uriType, request.Uri, request.KeyStarter, http.StatusOK, nil
+	return uriType, request.Uri, request.KeyStarter, nil
 }

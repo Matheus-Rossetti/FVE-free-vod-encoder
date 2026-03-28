@@ -2,7 +2,6 @@ package rest
 
 import (
 	"io"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -25,7 +24,6 @@ func TestValidateBody(t *testing.T) {
 			expectedUriType:    core.Url,
 			expectedUri:        "http://mycoolvideo.com",
 			expectedKeyStarter: "key/starter",
-			expectedStatus:     http.StatusOK,
 			wantErr:            false,
 		},
 		{
@@ -34,7 +32,6 @@ func TestValidateBody(t *testing.T) {
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
-			expectedStatus:     http.StatusUnprocessableEntity,
 			wantErr:            true,
 		},
 		{
@@ -43,7 +40,6 @@ func TestValidateBody(t *testing.T) {
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
-			expectedStatus:     http.StatusUnprocessableEntity,
 			wantErr:            true,
 		},
 		{
@@ -52,7 +48,6 @@ func TestValidateBody(t *testing.T) {
 			expectedUriType:    core.Unsupported,
 			expectedUri:        "",
 			expectedKeyStarter: "",
-			expectedStatus:     http.StatusUnprocessableEntity,
 			wantErr:            true,
 		},
 	}
@@ -61,7 +56,7 @@ func TestValidateBody(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			body := io.NopCloser(strings.NewReader(tt.body))
 
-			uriType, uri, keyStarter, status, err := validateBody(body)
+			uriType, uri, keyStarter, err := validateBody(body)
 
 			if tt.expectedUriType != uriType {
 				t.Errorf("expected uri type to be %v, got %v", tt.expectedUri, uriType)
@@ -73,10 +68,6 @@ func TestValidateBody(t *testing.T) {
 
 			if tt.expectedKeyStarter != keyStarter {
 				t.Errorf("expected key starter to be %v, got %v", tt.expectedKeyStarter, keyStarter)
-			}
-
-			if tt.expectedStatus != status {
-				t.Errorf("expected status to be %v, got %v", tt.expectedStatus, status)
 			}
 
 			hasErr := (err != nil)
