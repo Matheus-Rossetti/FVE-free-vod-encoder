@@ -90,7 +90,7 @@ func LoadInto(options *core.Options) error {
 
 	err = validate.Struct(options)
 	if err != nil {
-		return fmt.Errorf("Validation error", "err", err)
+		return fmt.Errorf("Validation error", err)
 	}
 
 	return nil

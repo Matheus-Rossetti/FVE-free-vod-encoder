@@ -13,7 +13,7 @@ type rest struct {
 	log           *log.Logger
 	slog          *slog.Logger
 	port          string
-	downloadQueue chan<- *core.Job
+	downloadQueue core.IngestQueue
 }
 
 func NewRest(
@@ -21,7 +21,7 @@ func NewRest(
 	log *log.Logger,
 	slog *slog.Logger,
 	port string,
-	downloadQueue chan<- *core.Job,
+	downloadQueue core.IngestQueue,
 ) *rest {
 	return &rest{
 		ctx:           ctx,

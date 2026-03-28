@@ -30,46 +30,17 @@ const (
 	video
 )
 
-func (i *ingestor) downloadToFile(url string, file *os.File) error {
+func (i *ingestor) prepareFileForDownload(file *os.File) error {
 
-	// Check if it's a video
-	fyleType, err := i.checkFileType(url)
+	err := file.Truncate(0)
 	if err != nil {
-		return err
-	}
-	if fyleType != video {
-		i.slog.Error(ErrFileNotVideo.Error())
-		return ErrFileNotVideo
+		return fmt.Errorf("%w: %v", ErrTruncatingFile, err)
 	}
 
-	// Create request
-	requestCtx, cancel := context.WithTimeout(i.ctx, time.Minute*15)
-	defer cancel()
-
-	request, err := http.NewRequestWithContext(requestCtx, "GET", url, nil)
+	// Point to the head of the file
+	_, err = file.Seek(0, 0)
 	if err != nil {
-		i.slog.Error(ErrFailedRequestCreation.Error(), "err", err)
-		return fmt.Errorf("%w: %v", ErrFailedRequestCreation, err)
-	}
-
-	// Execute request
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		i.slog.Error(ErrFailedRequestExecution.Error(), "err", err)
-		return fmt.Errorf("%w: %v", ErrFailedRequestExecution, err)
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		i.slog.Error(ErrResponseStatusNotOk.Error(), "status", response.Status)
-		return fmt.Errorf("%w: status %v", ErrResponseStatusNotOk, response.Status)
-	}
-
-	// Download directly to file on disc
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		i.slog.Error(ErrReadingBodyIntoFile.Error(), "err", err)
-		return fmt.Errorf("%w: %v", ErrReadingBodyIntoFile, err)
+		return fmt.Errorf("%w: %v", ErrPointingToFileHead, err)
 	}
 
 	return nil
@@ -119,19 +90,46 @@ func (i *ingestor) checkFileType(url string) (FileType, error) {
 	return video, nil
 }
 
-func (i *ingestor) prepareFileForDownload(file *os.File) error {
+func (i *ingestor) downloadToFile(url string, file *os.File) error {
 
-	err := file.Truncate(0)
+	// Check if it's a video
+	fyleType, err := i.checkFileType(url)
 	if err != nil {
-		i.slog.Error(ErrTruncatingFile.Error(), "err", err)
-		return fmt.Errorf("%w: %v", ErrTruncatingFile, err)
+		return err
+	}
+	if fyleType != video {
+		i.slog.Error(ErrFileNotVideo.Error())
+		return ErrFileNotVideo
 	}
 
-	// Point to file head, otherwise might start download somewhere else
-	_, err = file.Seek(0, 0)
+	// Create request
+	requestCtx, cancel := context.WithTimeout(i.ctx, time.Minute*15)
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(requestCtx, "GET", url, nil)
 	if err != nil {
-		i.slog.Error(ErrTruncatingFile.Error(), "err", err)
-		return fmt.Errorf("%w: %v", ErrPointingToFileHead, err)
+		i.slog.Error(ErrFailedRequestCreation.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrFailedRequestCreation, err)
+	}
+
+	// Execute request
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		i.slog.Error(ErrFailedRequestExecution.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrFailedRequestExecution, err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		i.slog.Error(ErrResponseStatusNotOk.Error(), "status", response.Status)
+		return fmt.Errorf("%w: status %v", ErrResponseStatusNotOk, response.Status)
+	}
+
+	// Download directly to file on disc
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		i.slog.Error(ErrReadingBodyIntoFile.Error(), "err", err)
+		return fmt.Errorf("%w: %v", ErrReadingBodyIntoFile, err)
 	}
 
 	return nil

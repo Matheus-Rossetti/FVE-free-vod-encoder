@@ -15,7 +15,7 @@ func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rest.pushJob(uriType, uri, keyStarter)
+	rest.downloadQueue.PushJob(uriType, uri, keyStarter, "REST")
 	rest.slog.Info("added a job to the queue!", "uri", uri, "key starter", keyStarter)
 	fmt.Fprintf(w, "job added to internal queue!")
 }

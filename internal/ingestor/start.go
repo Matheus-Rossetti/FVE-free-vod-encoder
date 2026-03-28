@@ -16,18 +16,16 @@ var (
 func (d *ingestor) Start() {
 JobLoop:
 	for job := range d.downloadQueue {
-		d.slog.Info(fmt.Sprintf("Received a job from %v", job.DownloadJob.Source),
-			"id", d.id)
+		d.slog.Info("Received a job!", "source", job.DownloadJob.Source)
 
 		switch job.DownloadJob.UriType {
 		case core.Url:
 			file := <-d.filePool // file is returned to the pool by the encoder or by an error
-			d.slog.Info(fmt.Sprintf("Downloading from %v into %v", job.DownloadJob.VideoUri, file.Name()),
-				"id", d.id)
+			d.slog.Info("Downloading...", "from", job.DownloadJob.VideoUri)
 
 			err := d.prepareFileForDownload(file)
 			if err != nil {
-				d.slog.Error(ErrPreparingFileforDownload.Error(), "err", err, "id", d.id)
+				d.slog.Error(ErrPreparingFileforDownload.Error(), "err", err)
 				d.filePool <- file
 				continue JobLoop
 			}

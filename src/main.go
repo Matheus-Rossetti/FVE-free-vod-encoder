@@ -30,6 +30,7 @@ func main() {
 	frevod.Greet()
 
 	options := core.NewOptions()
+	// loading isn't working,
 	err := config.LoadInto(options)
 	// move this fatal into .LoadInto
 	if err != nil {
