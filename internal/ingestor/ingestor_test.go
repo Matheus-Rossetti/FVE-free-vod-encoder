@@ -1,6 +1,8 @@
 package ingestor
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
@@ -57,4 +59,39 @@ func TestPrepareFileForDownload(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCheckFileType(t *testing.T) {
+
+	// mock server
+	server := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+
+			}))
+	defer server.Close()
+
+	testCases := []struct {
+		name    string
+		url     string
+		wantErr bool
+	}{
+		{
+			name:    "video file type",
+			url:     server.URL,
+			wantErr: false,
+		},
+		{
+			name:    "not video file type",
+			url:     server.URL,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+
+		})
+	}
+
 }
