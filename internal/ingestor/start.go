@@ -2,15 +2,12 @@ package ingestor
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 var (
-	ErrPreparingFileforDownload = errors.New("failed to prepare file")
-	ErrDownloading              = errors.New("failed to download file")
-	ErrValidatingFileFromPath   = errors.New("failed local file validation")
+	ErrValidatingFileFromPath = errors.New("failed local file validation")
 )
 
 func (i *ingestor) Start() {
@@ -20,24 +17,25 @@ JobLoop:
 
 		switch job.DownloadJob.UriType {
 		case core.Url:
-			file := <-i.filePool // file is returned to the pool by the encoder or by an error
+			i.slog.Info("Downloading...", "from", job.DownloadJob.VideoUri)
 
+			file := <-i.filePool // file is returned to the pool by the encoder or by an error
 			err := i.ingestFromUrl(file, job.DownloadJob.VideoUri)
 			if err != nil {
 				i.filePool <- file
-				i.handleUrlError(err)
-				continue
+				i.slog.Error("skipping job", "why", err)
+				continue JobLoop
 			}
 
 			job.EncodeJob.DownloadedFile = true
 			job.EncodeJob.File = file
 
 		case core.Path:
-			i.slog.Info(fmt.Sprintf("Validating %v", job.DownloadJob.VideoUri))
+			i.slog.Info("Validating...", "file", job.DownloadJob.VideoUri)
 
-			localFile, err := i.validateFileFromPath(job.DownloadJob.VideoUri)
+			localFile, err := i.ingestFromLocal(job.DownloadJob.VideoUri)
 			if err != nil {
-				i.slog.Error(ErrValidatingFileFromPath.Error(), "err", err)
+				i.slog.Error("skipping job", "why", err)
 				continue JobLoop
 			}
 

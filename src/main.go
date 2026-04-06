@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/config"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
@@ -22,8 +21,6 @@ import (
 
 func main() {
 	// WELLCOME TO THE FREVOD SOURCE CODE!
-
-	// SLEEPS ARE SO LOGS COME OUT IN THE RIGHT ORDER
 
 	frevod := core.StartFrevod(logger.Frevod())
 	frevod.CheckForFFmpegBin()
@@ -55,42 +52,33 @@ func main() {
 		// job to it, the push will fail and leave orphan files.
 		<-ctx.Done()
 		frevod.Slog.Warn("Shutdown signal received!")
-
-		time.Sleep(time.Second / 2)
 		close(ingestQueue)
-
-		time.Sleep(time.Second / 2)
 		close(encodeQueue)
-
-		time.Sleep(time.Second / 2)
 		close(dispatchQueue)
 	})
 
 	// START OUTPUT METHODS
-	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to uploader.Start
+	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to dispatcher
 	if options.Upload.Local.Use {
-		time.Sleep(time.Second / 2)
 		log, slog := logger.Local()
 		provider := local.Start(log, slog, options)
 		storageProviders["local"] = provider
 	}
 	if options.Upload.S3.Use {
-		time.Sleep(time.Second / 2)
 		log, slog := logger.S3()
 		provider := s3.Start(log, slog, options)
 		storageProviders["s3"] = provider
 	}
 
-	time.Sleep(time.Second / 2)
+	//-------------------------------------------
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
-			log, slog := logger.Ingestor(index)
+			log, slog := logger.Dispatcher(index)
 			uploader := dispatcher.NewDispatcher(ctx, log, slog, options, index, dispatchQueue, storageProviders)
 			uploader.Start()
 		})
 	}
 
-	time.Sleep(time.Second / 2)
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Encoder(index)
@@ -99,10 +87,9 @@ func main() {
 		})
 	}
 
-	time.Sleep(time.Second / 2)
 	for index := range options.Encode.ConcurrentEncodings * 2 {
 		wg.Go(func() {
-			log, slog := logger.Dispatcher(index)
+			log, slog := logger.Ingestor(index)
 			downloader := ingestor.NewIngestor(ctx, log, slog, options, filePool, index, ingestQueue, encodeQueue)
 			downloader.Start()
 		})
@@ -111,7 +98,6 @@ func main() {
 
 	// START INPUT METHODS
 	if options.Input.Cli {
-		time.Sleep(time.Second / 2)
 		log, slog := logger.Cli()
 		wg.Go(func() {
 			cli := cli.NewCli(ctx, log, slog, ingestQueue)
@@ -119,7 +105,6 @@ func main() {
 		})
 	}
 	if options.Input.REST {
-		time.Sleep(time.Second / 2)
 		log, slog := logger.Rest()
 		wg.Go(func() {
 			rest := rest.NewRest(ctx, log, slog, ":8080", ingestQueue)

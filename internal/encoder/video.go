@@ -130,7 +130,7 @@ func (e *encoder) GetMetadataFrom(videoPath string) (*Metadata, error) {
 	jsonOutput, err := cmd.CombinedOutput()
 	if err != nil {
 		e.slog.Error(ErrRunningFFprobe.Error(), "err", err)
-		return nil, fmt.Errorf("%w: %v", ErrRunningFFprobe, err)
+		return nil, fmt.Errorf("%w: %v", ErrRunningFFprobe, string(jsonOutput))
 	}
 
 	var metadata Metadata

@@ -21,7 +21,7 @@ func CategorizeUri(uri string) (URIType, string) {
 	switch scheme {
 	case "http", "https":
 		return Url, scheme
-	case "file", "":
+	case "file", "c", "":
 		return Path, scheme
 	default:
 		return Unsupported, scheme
