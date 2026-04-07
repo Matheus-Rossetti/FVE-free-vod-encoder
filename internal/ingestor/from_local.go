@@ -27,7 +27,6 @@ func (d *ingestor) ingestFromLocal(path string) (*os.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w, %v", ErrFindingLocalFile, err)
 	}
-	defer file.Close()
 
 	err = checkFileForVideo(file)
 	if err != nil {
@@ -50,6 +49,8 @@ func getAbsolutePath(path string) (string, error) {
 
 func checkExistence(absolutePath string) (*os.File, error) {
 	localFile, err := os.Open(absolutePath)
+	localFile.Close()
+
 	if err != nil {
 		return nil, err
 	}
