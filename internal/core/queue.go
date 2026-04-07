@@ -4,16 +4,22 @@ type IngestQueue chan *Job
 type EncodeQueue chan *Job
 type DispatchQueue chan *Job
 
+var (
+	ingestQueue   IngestQueue
+	encodeQueue   EncodeQueue
+	dispatchQueue DispatchQueue
+)
+
 func (f *frevod) StartQueues() (IngestQueue, EncodeQueue, DispatchQueue) {
 
-	ingestQueue := make(chan *Job, 999)
-	encodeQueue := make(chan *Job, f.Options.Encode.ConcurrentEncodings)
-	dispatchQueue := make(chan *Job, f.Options.Encode.ConcurrentEncodings)
+	ingestQueue = make(chan *Job, 999)
+	encodeQueue = make(chan *Job, f.Options.Encode.ConcurrentEncodings)
+	dispatchQueue = make(chan *Job, f.Options.Encode.ConcurrentEncodings)
 
 	return ingestQueue, encodeQueue, dispatchQueue
 }
 
-func (i IngestQueue) PushJob(uriType URIType, uri, keyStarter string, source string) {
+func PushJob(uriType URIType, uri, keyStarter string, source string) {
 
 	job := NewJob()
 	job.DownloadJob.Source = source
@@ -22,5 +28,5 @@ func (i IngestQueue) PushJob(uriType URIType, uri, keyStarter string, source str
 
 	job.UploadJob.KeyStarter = keyStarter
 
-	i <- job
+	ingestQueue <- job
 }

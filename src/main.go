@@ -100,14 +100,14 @@ func main() {
 	if options.Input.Cli {
 		log, slog := logger.Cli()
 		wg.Go(func() {
-			cli := cli.NewCli(ctx, log, slog, ingestQueue)
+			cli := cli.NewCli(ctx, log, slog)
 			cli.Start()
 		})
 	}
 	if options.Input.REST {
 		log, slog := logger.Rest()
 		wg.Go(func() {
-			rest := rest.NewRest(ctx, log, slog, ":8080", ingestQueue)
+			rest := rest.NewRest(ctx, log, slog, ":8080")
 			rest.Start()
 		})
 	}

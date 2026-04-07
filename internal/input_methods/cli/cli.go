@@ -4,22 +4,18 @@ import (
 	"context"
 	"log"
 	"log/slog"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 type cli struct {
-	ctx         context.Context
-	log         *log.Logger
-	slog        *slog.Logger
-	ingestQueue core.IngestQueue
+	ctx  context.Context
+	log  *log.Logger
+	slog *slog.Logger
 }
 
-func NewCli(ctx context.Context, log *log.Logger, slog *slog.Logger, downloadQueue core.IngestQueue) *cli {
+func NewCli(ctx context.Context, log *log.Logger, slog *slog.Logger) *cli {
 	return &cli{
-		ctx:         ctx,
-		log:         log,
-		slog:        slog,
-		ingestQueue: downloadQueue,
+		ctx:  ctx,
+		log:  log,
+		slog: slog,
 	}
 }

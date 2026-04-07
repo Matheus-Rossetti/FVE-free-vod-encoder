@@ -3,6 +3,8 @@ package rest
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +17,7 @@ func (rest *rest) videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rest.downloadQueue.PushJob(uriType, uri, keyStarter, "REST")
+	core.PushJob(uriType, uri, keyStarter, "REST")
 	rest.slog.Info("added a job to the queue!", "uri", uri, "key starter", keyStarter)
 
 	w.WriteHeader(http.StatusAccepted)

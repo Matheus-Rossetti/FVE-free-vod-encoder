@@ -1,13 +1,7 @@
 package ingestor
 
 import (
-	"errors"
-
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-)
-
-var (
-	ErrValidatingFileFromPath = errors.New("failed local file validation")
 )
 
 func (i *ingestor) Start() {

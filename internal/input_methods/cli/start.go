@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"os"
 	"time"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 func (c *cli) Start() {
@@ -21,7 +23,7 @@ func (c *cli) Start() {
 				continue
 			}
 
-			c.ingestQueue.PushJob(uriType, uri, keyStarter, "cli")
+			core.PushJob(uriType, uri, keyStarter, "cli")
 		}
 	}()
 
