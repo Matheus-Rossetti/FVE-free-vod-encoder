@@ -19,7 +19,7 @@ func Load(options *core.Options, path string) error {
 
 		loadEnvVars(options)
 
-		fmt.Printf("\nEnv vars loaded!")
+		fmt.Printf("\nEnv vars loaded!\n")
 		return nil
 	}
 
@@ -43,12 +43,12 @@ func Load(options *core.Options, path string) error {
 // I'll come back to it later... or so I hope...
 func loadEnvVars(options *core.Options) {
 	// ingest --------
-	options.Ingest.REST.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_REST"))
-	options.Ingest.REST.Port = os.Getenv("PORT")
+	options.Ingest.REST.Enabled = true
+	options.Ingest.REST.Port = ":1137"
 	// encode --------
 	options.Encode.ConcurrentEncodings, _ = strconv.Atoi(os.Getenv("CONCURRENT_ENCODINGS"))
 	// dispatch ------
-	options.Dispatch.S3.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_S3"))
+	options.Dispatch.S3.Enabled = true
 	options.Dispatch.S3.Bucket = os.Getenv("BUCKET")
 	options.Dispatch.S3.Endpoint = os.Getenv("ENDPOINT")
 	options.Dispatch.S3.AccessKey = os.Getenv("ACCESS_KEY")
@@ -74,7 +74,7 @@ func loadYamlConfig(options *core.Options, path string) error {
 		return fmt.Errorf("failed to parse yaml in %q: %w", path, err)
 	}
 
-	fmt.Printf("\nConfig loaded!")
+	fmt.Printf("\nConfig loaded!\n")
 	return nil
 }
 

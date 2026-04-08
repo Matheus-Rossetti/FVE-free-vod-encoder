@@ -89,7 +89,7 @@ func (d *dispatcher) Start() {
 				}
 			}
 
-			d.slog.Info("Finished upliading!", "to", providerName, "dir", job.UploadJob.FromDir, "id", d.id)
+			d.slog.Info("Finished dispatching!", "to", providerName)
 		} // provider loop
 
 		go d.DeleteROT(job.UploadJob.FromDir)

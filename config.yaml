@@ -19,7 +19,7 @@ dispatch:
     s3_use_ssl: true
   local:
     enabled: true
-    store_at: 
+    store_at: C:\Users\mathe\OneDrive\Desktop\segmented videos
 
 
   
