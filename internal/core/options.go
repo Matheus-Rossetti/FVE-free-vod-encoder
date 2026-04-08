@@ -1,9 +1,9 @@
 package core
 
 type Options struct {
-	Ingest   IngestOptions   `yaml:"input"`
+	Ingest   IngestOptions   `yaml:"ingest"`
 	Encode   EncodeOptions   `yaml:"encode"`
-	Dispatch DispatchOptions `yaml:"upload"`
+	Dispatch DispatchOptions `yaml:"dispatch"`
 
 	// ExposeMetrict bool `yaml:"expose_metrics"`
 }

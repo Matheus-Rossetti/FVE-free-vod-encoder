@@ -1,4 +1,4 @@
-input:
+ingest:
   cli: false
   rest: true
   
@@ -6,7 +6,7 @@ encode:
   concurrent_encodings: 2
   output_ffmpeg_command: false
   
-upload:
+dispatch:
   s3:
     use: false
     bucket_name: ""
