@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 func (r *rest) Start() {
@@ -23,7 +22,6 @@ func (r *rest) Start() {
 	r.slog.Info("Waiting for requests!", "addr", addr)
 
 	<-r.ctx.Done()
-	time.Sleep(time.Second * 2)
 	r.slog.Info("Shutting down...")
 	server.Shutdown(context.Background())
 }

@@ -3,7 +3,6 @@ package cli
 import (
 	"bufio"
 	"os"
-	"time"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
@@ -28,6 +27,5 @@ func (c *cli) Start() {
 	}()
 
 	<-c.ctx.Done()
-	time.Sleep(time.Second * 2)
 	c.slog.Info("Shutting down...")
 }
