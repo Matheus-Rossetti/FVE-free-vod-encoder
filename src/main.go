@@ -29,7 +29,7 @@ func main() {
 	options := core.NewOptions()
 	err := config.Load(options, "")
 	if err != nil {
-		frevod.Log.Fatal("Failed to load config", err.Error())
+		frevod.Log.Fatal(err.Error())
 	}
 
 	// START FILE POOL (used by downloader and encoder)
@@ -94,17 +94,17 @@ func main() {
 	}
 
 	// START INPUT METHODS
-	if options.Ingest.Cli {
+	if options.Ingest.Cli.Enabled {
 		log, slog := logger.Cli()
 		wg.Go(func() {
 			cli := cli.NewCli(ctx, log, slog)
 			cli.Start()
 		})
 	}
-	if options.Ingest.REST {
+	if options.Ingest.REST.Enabled {
 		log, slog := logger.Rest()
 		wg.Go(func() {
-			rest := rest.NewRest(ctx, log, slog, ":8080")
+			rest := rest.NewRest(ctx, log, slog, options.Ingest.REST.Port)
 			rest.Start()
 		})
 	}

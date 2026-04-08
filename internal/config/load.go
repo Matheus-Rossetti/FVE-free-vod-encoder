@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
@@ -29,10 +30,11 @@ func Load(options *core.Options, path string) error {
 		return err
 	}
 
-	var validate = validator.New()
+	// TODO improve validation logs
+	validate := validator.New()
 	err = validate.Struct(options)
 	if err != nil {
-		return fmt.Errorf("failed to validate config: %w", err)
+		log.Fatal("Unvalid config\n", err)
 	}
 
 	return nil

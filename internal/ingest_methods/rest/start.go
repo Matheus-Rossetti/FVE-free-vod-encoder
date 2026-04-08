@@ -18,7 +18,7 @@ func (r *rest) Start() {
 	}
 	go server.ListenAndServe()
 
-	addr := fmt.Sprintf("POST http://localhost:%v/encode", r.port)
+	addr := fmt.Sprintf("POST http://localhost%v/encode", r.port)
 	r.slog.Info("Waiting for requests!", "addr", addr)
 
 	<-r.ctx.Done()

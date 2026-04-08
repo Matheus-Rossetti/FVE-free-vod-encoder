@@ -13,12 +13,21 @@ func NewOptions() *Options {
 }
 
 type IngestOptions struct {
-	Cli  bool `yaml:"cli"`
-	REST bool `yaml:"rest"`
+	Cli  CliOptions  `yaml:"cli"`
+	REST RestOptions `yaml:"rest"`
 	// RabbitMQ bool
 	// Kafka    bool
 	// GRPC     bool
 	// QSQ      bool
+}
+
+type CliOptions struct {
+	Enabled bool `yaml:"enabled"`
+}
+
+type RestOptions struct {
+	Enabled bool   `yaml:"enabled"`
+	Port    string `yaml:"port" validate:"required_if=Enabled true"`
 }
 
 type EncodeOptions struct {
@@ -37,17 +46,17 @@ type DispatchOptions struct {
 }
 
 type LocalOption struct {
-	Enabled bool   `yaml:"use"`
-	StoreAt string `yaml:"store_at" validate:"required_if=Use true"`
+	Enabled bool   `yaml:"enabled"`
+	StoreAt string `yaml:"store_at" validate:"required_if=Enabled true"`
 }
 
 type S3Options struct {
-	Enabled         bool   `yaml:"use"`
-	Endpoint        string `yaml:"endpoint" validate:"required_if=Use true"`
-	AccessKey       string `yaml:"access_key" validate:"required_if=Use true"`
-	SecretAccessKey string `yaml:"secret_key" validate:"required_if=Use true"`
-	Bucket          string `yaml:"bucket" validate:"required_if=Use true"`
-	UseSSL          bool   `yaml:"ssl" validate:"required_if=Use true"`
+	Enabled         bool   `yaml:"enabled"`
+	Endpoint        string `yaml:"endpoint"   validate:"required_if=Enabled true"`
+	AccessKey       string `yaml:"access_key" validate:"required_if=Enabled true"`
+	SecretAccessKey string `yaml:"secret_key" validate:"required_if=Enabled true"`
+	Bucket          string `yaml:"bucket"     validate:"required_if=Enabled true"`
+	UseSSL          bool   `yaml:"ssl"        validate:"required_if=Enabled true"`
 }
 
 type AzureBlobStorageOptions struct {
