@@ -10,11 +10,11 @@ var (
 	dispatchQueue DispatchQueue
 )
 
-func (f *frevod) StartQueues() (IngestQueue, EncodeQueue, DispatchQueue) {
+func StartQueues(options *Options) (IngestQueue, EncodeQueue, DispatchQueue) {
 
 	ingestQueue = make(chan *Job, 999)
-	encodeQueue = make(chan *Job, f.Options.Encode.ConcurrentEncodings)
-	dispatchQueue = make(chan *Job, f.Options.Encode.ConcurrentEncodings)
+	encodeQueue = make(chan *Job, options.Encode.ConcurrentEncodings)
+	dispatchQueue = make(chan *Job, options.Encode.ConcurrentEncodings)
 
 	return ingestQueue, encodeQueue, dispatchQueue
 }

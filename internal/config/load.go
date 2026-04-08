@@ -5,12 +5,13 @@ import (
 	"os"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/go-playground/validator/v10"
 	"go.yaml.in/yaml/v4"
 )
 
 func Load(options *core.Options, path string) error {
 
-	err := standardValues(options)
+	err := loadStdOptions(options)
 	if err != nil {
 		return err
 	}
@@ -20,6 +21,7 @@ func Load(options *core.Options, path string) error {
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 
 	err = loadYaml(options, path)
@@ -27,20 +29,25 @@ func Load(options *core.Options, path string) error {
 		return err
 	}
 
+	var validate = validator.New()
+	err = validate.Struct(options)
+	if err != nil {
+		return fmt.Errorf("failed to validate config: %w", err)
+	}
+
 	return nil
 }
 
-func standardValues(target any) error {
-	_ = target
+func loadStdOptions(options *core.Options) error {
+	options.Encode.ConcurrentEncodings = 2
 	return nil
 }
 
-func loadEnvVars(target any) error {
-	_ = target
+func loadEnvVars(options *core.Options) error {
 	return nil
 }
 
-func loadYaml(target any, path string) error {
+func loadYaml(options *core.Options, path string) error {
 	if path == "" {
 		path = "config.yaml"
 	}
@@ -50,7 +57,8 @@ func loadYaml(target any, path string) error {
 		return fmt.Errorf("failed to read config file %q: %w", path, err)
 	}
 
-	if err := yaml.Unmarshal(configFile, target); err != nil {
+	err = yaml.Unmarshal(configFile, options)
+	if err != nil {
 		return fmt.Errorf("failed to parse yaml in %q: %w", path, err)
 	}
 

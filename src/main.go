@@ -27,9 +27,7 @@ func main() {
 	frevod.Greet()
 
 	options := core.NewOptions()
-	// loading isn't working,
-	err := config.LoadInto(options)
-	// move this fatal into .LoadInto
+	err := config.Load(options, "")
 	if err != nil {
 		frevod.Log.Fatal("Failed to load config", err.Error())
 	}
@@ -43,7 +41,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	var wg sync.WaitGroup
 
-	ingestQueue, encodeQueue, dispatchQueue := frevod.StartQueues()
+	ingestQueue, encodeQueue, dispatchQueue := core.StartQueues(options)
 
 	wg.Go(func() {
 		// The order in which the queues are closed is important
