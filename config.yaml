@@ -2,16 +2,16 @@ ingest:
   cli:
     enabled: true
   rest:
-    enabled: true 
-    port: # :8080
-  
+    enabled: false
+    port: ":1137" # :1137
+
 encode:
   concurrent_encodings: 2 
   output_ffmpeg_command: false
   
 dispatch:
   s3:
-    enabled: true
+    enabled: false
     bucket_name:
     s3_endpoint:
     s3_access_key:
@@ -19,7 +19,7 @@ dispatch:
     s3_use_ssl: true
   local:
     enabled: true
-    store_at: C:\Users\mathe\OneDrive\Desktop\segmented videos
+    store_at: 
 
 
   
