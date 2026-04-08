@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"log/slog"
 )
@@ -19,16 +18,16 @@ func StartFrevod(log *log.Logger, slog *slog.Logger) *frevod {
 	}
 }
 
-func (f *frevod) SetOptions(options *Options) {
+// func (f *frevod) SetOptions(options *Options) {
 
-	options.Input.REST = true
-	options.Input.Cli = true
-	options.Encode.ConcurrentEncodings = 2
-	options.Upload.Local.Use = true
-	options.Upload.Local.StoreAt = `C:\Users\mathe\OneDrive\Desktop\segmented videos`
+// 	options.Input.REST = true
+// 	options.Input.Cli = true
+// 	options.Encode.ConcurrentEncodings = 2
+// 	options.Upload.Local.Use = true
+// 	options.Upload.Local.StoreAt = `C:\Users\mathe\OneDrive\Desktop\segmented videos`
 
-	// set
-	f.Options = options
+// 	// set
+// 	f.Options = options
 
-	f.Slog.Info(fmt.Sprintf("Using options %+v", options))
-}
+// 	f.Slog.Info(fmt.Sprintf("Using options %+v", options))
+// }

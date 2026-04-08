@@ -3,94 +3,55 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/Matheus-Rossetti/frevod/internal/core"
-	"github.com/go-playground/validator/v10"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
-func LoadInto(options *core.Options) error {
-	validate := validator.New()
-	// TODO If config.yml file isn't found, or is malformed
-	// get options from charm's Huh lib (terminal form)
-	// add option to save that config into a config.yml
+func Load(options *core.Options, path string) error {
+
+	err := standardValues(options)
+	if err != nil {
+		return err
+	}
 
 	if isRunningInDocker() {
-
-		options.Input.Cli = false
-		options.Input.REST = true
-		options.Upload.S3.Endpoint = os.Getenv("ENDPOINT")
-		options.Upload.S3.AccessKey = os.Getenv("ACCESS_KEY")
-		options.Upload.S3.SecretAccessKey = os.Getenv("SECRET_KEY")
-		options.Upload.S3.BucketName = os.Getenv("BUCKET_NAME")
-		if options.Upload.S3.Endpoint != "" {
-			options.Upload.S3.Use = true
-		}
-
-		ssl, err := strconv.ParseBool(os.Getenv("USE_SSL"))
+		err := loadEnvVars(options)
 		if err != nil {
-			return fmt.Errorf("Failed to get USE_SSL")
-		}
-		options.Upload.S3.UseSSL = ssl
-
-		options.Upload.Local.StoreAt = os.Getenv("STORE_AT")
-		if options.Upload.Local.StoreAt != "" {
-			options.Upload.Local.Use = true
-		}
-
-		concurrentEncodings, _ := strconv.Atoi(os.Getenv("CONCURRENT_ENCODINGS"))
-		options.Encode.ConcurrentEncodings = concurrentEncodings
-
-		err = validate.Struct(options)
-		if err != nil {
-			fmt.Errorf("Validation error", "err", err)
+			return err
 		}
 	}
 
-	// Standard options
-	options = &core.Options{
-		Input: core.InputOptions{
-			Cli:  true,
-			REST: false,
-		},
-
-		Encode: core.EncodeOptions{
-			ConcurrentEncodings: 2,
-			OutputFFmpegCommand: false,
-		},
-
-		Upload: core.UploadOptions{
-			S3: core.AmazonS3Options{
-				Use:             false,
-				Endpoint:        "",
-				AccessKey:       "",
-				SecretAccessKey: "",
-				BucketName:      "",
-				UseSSL:          false,
-			},
-			Local: core.LocalOption{
-				Use:     true,
-				StoreAt: "segmented-videos",
-			},
-		},
+	err = loadYaml(options, path)
+	if err != nil {
+		return err
 	}
 
-	// TODO get filepath from flag --config
+	return nil
+}
 
-	configFile, err := os.ReadFile("config.yaml")
-	if err != nil {
-		return fmt.Errorf("config.yml file not found, proceeding standard options.")
+func standardValues(target any) error {
+	_ = target
+	return nil
+}
+
+func loadEnvVars(target any) error {
+	_ = target
+	return nil
+}
+
+func loadYaml(target any, path string) error {
+	if path == "" {
+		path = "config.yaml"
 	}
 
-	err = yaml.Unmarshal(configFile, options)
+	configFile, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("Failed to parse config.yaml, proceeding with standard options.")
+		return fmt.Errorf("failed to read config file %q: %w", path, err)
 	}
 
-	err = validate.Struct(options)
-	if err != nil {
-		return fmt.Errorf("Validation error", err)
+	if err := yaml.Unmarshal(configFile, target); err != nil {
+		return fmt.Errorf("failed to parse yaml in %q: %w", path, err)
 	}
 
 	return nil

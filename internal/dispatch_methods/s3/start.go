@@ -19,13 +19,13 @@ type S3 struct {
 
 func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
 
-	bucket := options.Upload.S3.BucketName
-	endpoint := options.Upload.S3.Endpoint
-	accessKeyID := options.Upload.S3.AccessKey
-	secretAccessKey := options.Upload.S3.SecretAccessKey
-	useSSL := options.Upload.S3.UseSSL
+	bucket := options.Dispatch.S3.Bucket
+	endpoint := options.Dispatch.S3.Endpoint
+	accessKeyID := options.Dispatch.S3.AccessKey
+	secretAccessKey := options.Dispatch.S3.SecretAccessKey
+	useSSL := options.Dispatch.S3.UseSSL
 
-	// Minio complains if the endpoint includes http://
+	// Minio package complains if the endpoint includes http:// or https://
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 
@@ -35,7 +35,7 @@ func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
 		Secure: useSSL,
 	})
 	if err != nil {
-		log.Fatalf("Failed to start S3 upload method. err=%v", err)
+		log.Fatalf("Failed to start S3 Dispatch method. err=%v", err)
 	}
 
 	slog.Info("Storing on S3!", "bucket", bucket)

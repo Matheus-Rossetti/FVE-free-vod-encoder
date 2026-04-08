@@ -9,14 +9,14 @@ import (
 
 	"github.com/Matheus-Rossetti/frevod/internal/config"
 	"github.com/Matheus-Rossetti/frevod/internal/core"
+	"github.com/Matheus-Rossetti/frevod/internal/dispatch_methods/local"
+	"github.com/Matheus-Rossetti/frevod/internal/dispatch_methods/s3"
 	"github.com/Matheus-Rossetti/frevod/internal/dispatcher"
 	"github.com/Matheus-Rossetti/frevod/internal/encoder"
+	"github.com/Matheus-Rossetti/frevod/internal/ingest_methods/cli"
+	"github.com/Matheus-Rossetti/frevod/internal/ingest_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/ingestor"
-	"github.com/Matheus-Rossetti/frevod/internal/input_methods/cli"
-	"github.com/Matheus-Rossetti/frevod/internal/input_methods/rest"
 	"github.com/Matheus-Rossetti/frevod/internal/logger"
-	"github.com/Matheus-Rossetti/frevod/internal/output_methods/local"
-	"github.com/Matheus-Rossetti/frevod/internal/output_methods/s3"
 )
 
 func main() {
@@ -33,7 +33,6 @@ func main() {
 	if err != nil {
 		frevod.Log.Fatal("Failed to load config", err.Error())
 	}
-	frevod.SetOptions(options)
 
 	// START FILE POOL (used by downloader and encoder)
 	filePool := make(chan *os.File, options.Encode.ConcurrentEncodings*2)
@@ -59,12 +58,12 @@ func main() {
 
 	// START OUTPUT METHODS
 	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to dispatcher
-	if options.Upload.Local.Use {
+	if options.Dispatch.Local.Enabled {
 		log, slog := logger.Local()
 		provider := local.Start(log, slog, options)
 		storageProviders["local"] = provider
 	}
-	if options.Upload.S3.Use {
+	if options.Dispatch.S3.Enabled {
 		log, slog := logger.S3()
 		provider := s3.Start(log, slog, options)
 		storageProviders["s3"] = provider
@@ -97,14 +96,14 @@ func main() {
 	}
 
 	// START INPUT METHODS
-	if options.Input.Cli {
+	if options.Ingest.Cli {
 		log, slog := logger.Cli()
 		wg.Go(func() {
 			cli := cli.NewCli(ctx, log, slog)
 			cli.Start()
 		})
 	}
-	if options.Input.REST {
+	if options.Ingest.REST {
 		log, slog := logger.Rest()
 		wg.Go(func() {
 			rest := rest.NewRest(ctx, log, slog, ":8080")
