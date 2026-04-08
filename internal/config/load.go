@@ -44,7 +44,7 @@ func Load(options *core.Options, path string) error {
 func loadEnvVars(options *core.Options) {
 	// ingest --------
 	options.Ingest.REST.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_REST"))
-	options.Ingest.REST.Port = os.Getenv("ENABLE_CLI")
+	options.Ingest.REST.Port = os.Getenv("PORT")
 	// encode --------
 	options.Encode.ConcurrentEncodings, _ = strconv.Atoi(os.Getenv("CONCURRENT_ENCODINGS"))
 	// dispatch ------
