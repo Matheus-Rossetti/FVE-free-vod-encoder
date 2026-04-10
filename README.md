@@ -18,7 +18,7 @@ Frevod is a program that takes a video from _anywhere_, encodes it and stores HL
 
 ### These are some of the things Frevod does right now, but it'll keep evolving, there's a "planned features" section later on this README.
 
-## What configs?
+## What options?
 There's a couple options to choose from, divided into three categories.
 
 ### Ingest Options
