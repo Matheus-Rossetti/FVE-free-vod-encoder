@@ -68,9 +68,13 @@ dispatch:
 
 ## How to use each input method?
 
+---
+
 **CLI:** Type the URI (a URL or local path) and the KEY (the name of the video after encoding) as arguments **after** running the executable, these are **not** flags.
 
 Example: `http://coolvideos.com/funnycatvideo.mp4 funnycatvideo`
+
+---
 
 **REST:** Make a POST request to `/encode` with URI and KEY.
 
@@ -81,6 +85,9 @@ Example:
     "key": "making burgers with my brother",
   }
 ```
+
+---
+
 _Notice how you can get an input from the web or from local storage no matter what input method you're using_
 
 ## Nice, how can I use it?
@@ -162,7 +169,7 @@ This section will cover thing I want Frevod to support in the future, but also s
 ## Some questions you might have
 
 ### Why does this exist?
-At first, I was making a streaming service as a portfolio project but decided to just focus on the 'encode' part of it and make it as accessible as possible, you may have noticed that Frevod fits in every systems workflow, its built this way from the start. Currently, there's no solid option for a free, self hosted encoder service for vod streaming and I want to change that.
+At first, I was making a streaming service as a portfolio project but decided to just focus on the 'encode' part of it and make it as accessible as possible, you may have noticed that Frevod fits in every systems workflow, its built this way from the start. Currently, there's no solid option for a free, self hosted encoding service for vod streaming and I want to change that.
 
 ### Why 'Frevod'?
 Frevod stands for "Free Encoder for Video on Demand", quite simplistic, I know.
