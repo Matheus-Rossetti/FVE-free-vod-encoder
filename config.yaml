@@ -12,11 +12,11 @@ encode:
 dispatch:
   s3:
     enabled: false
-    bucket_name:
-    s3_endpoint:
-    s3_access_key:
-    s3_secret_key:
-    s3_use_ssl: true
+    bucket:
+    endpoint:
+    access_key:
+    secret_key:
+    use_ssl: true
   local:
     enabled: true
     store_at: C:\Users\mathe\OneDrive\Desktop\segmented videos
