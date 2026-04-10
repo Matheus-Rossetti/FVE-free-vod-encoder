@@ -70,13 +70,16 @@ dispatch:
 
 ---
 
-**CLI:** Type the URI (a URL or local path) and the KEY (the name of the video after encoding) as arguments **after** running the executable, these are **not** flags.
+### CLI:
+Type the URI (a URL or local path) and the KEY (the name of the video after encoding) as arguments **after** running the executable, these are **not** flags.
 
 Example: `http://coolvideos.com/funnycatvideo.mp4 funnycatvideo`
 
 ---
 
-**REST:** Make a POST request to `/encode` with URI and KEY.
+### REST:
+
+Make a POST request to `/encode` with URI and KEY.
 
 Example:
 ``` json
