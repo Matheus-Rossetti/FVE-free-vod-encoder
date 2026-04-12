@@ -79,7 +79,7 @@ func main() {
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Encoder(index)
-			encoder := encoder.NewEncoder(ctx, log, slog, options, filePool, index, encodeQueue, dispatchQueue)
+			encoder := encoder.NewEncoder(ctx, log, slog, options, filePool, encodeQueue, dispatchQueue)
 			encoder.Start()
 		})
 	}

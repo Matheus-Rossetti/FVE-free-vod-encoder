@@ -16,7 +16,7 @@ Frevod is a program that takes a video from _anywhere_, encodes it and stores HL
 * **Declarative config:** It accepts options through a simple `config.yaml` file, so you don't have to learn multiple complex FFmpeg flags, _which FFmpeg is famous for_.
 * **Easy to deploy:** You can spin a container with a couple env vars, run it locally with a `config.yaml` file or rely on Frevod's fallback standard options.
 
-### These are some of the things Frevod does right now, but it'll keep evolving, there's a "planned features" section later on this README.
+> These are some of the things Frevod does right now, but it'll keep evolving, there's a "planned features" section later on this README.
 
 ## What options?
 There's a couple options to choose from, divided into three categories.

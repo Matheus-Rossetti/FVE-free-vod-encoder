@@ -7,21 +7,21 @@ import (
 	"strings"
 )
 
-// This is quite a complex file, it operates multiple string concatenations
-// Each part of the command is built in a different function
-// We iterate through the same array in each function, that's on purpose
-// Sacrifice a litte bit of performance for maintainability
-// I tried my best not to make this ugly, okay? I'm Sorry
+// This is quite a complex file, it operates multiple string concatenations,
+// each part of the command is built in a different function,
+// we iterate through the same array in some functions, that's on purpose,
+// sacrifice a litte bit of performance for maintainability.
 
-// THERE'S AN EXAMPLE OF THE OUTPUT OF THIS FUNCTION AT THE END OF THIS FILE
+// I tried my best not to make this ugly. -- re-reading this now, I'm acutally quite proud.
+// There's an example of the output of this function at the end of this file.
 
-func (e *encoder) BuildFFmpegCommand(video *Video) *exec.Cmd {
+func (e *encoder) BuildFFmpegCommand(video *Video, path string) *exec.Cmd {
 
 	// --------- EACH BUILD FUNC RETURN A SLICE ---------
-	input := []string{"-i", video.Source}
+	input := []string{"-i", path}
 	filterComplex := buildFilterComplex(video)
 	videoMaps := buildVideoMaps(video) // h.264
-	audioMaps := buildAudioMaps(video) // aac | maybe switch to opus, heard it sounds better at the same bitrate and handle 5.1 sound
+	audioMaps := buildAudioMaps(video) // aac
 	keyFramesAndQuality := getKeyFramesAndQuality()
 	hlsOptions := buildHlsOptions(video)
 
@@ -39,7 +39,7 @@ func (e *encoder) BuildFFmpegCommand(video *Video) *exec.Cmd {
 		fmt.Println("\n", strings.Join(ffmpegArgs, " "))
 	}
 
-	// Returns a command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute
+	// Returns a command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute.
 	cmd := e.BuildForLowPrioExecution(ffmpegArgs)
 
 	return cmd
@@ -48,19 +48,19 @@ func (e *encoder) BuildFFmpegCommand(video *Video) *exec.Cmd {
 func buildFilterComplex(video *Video) []string {
 
 	flag := "-filter_complex"
-	splitAmount := len(video.RenditionsToMake)
+	splitAmount := len(video.Renditions)
 
 	// Example output:
 	// [0:v]split=3[v1][v2]
 	var splitSection strings.Builder
 	fmt.Fprintf(&splitSection, "[0:v]split=%v", splitAmount)
-	for index := range video.RenditionsToMake {
+	for index := range video.Renditions {
 		fmt.Fprintf(&splitSection, "[v%v]", (index + 1))
 	}
 
 	// Example output:
 	// ;[v1]scale=-2:720[v1out];[v2]scale=-2:480[v2out]
-	for index, res := range video.RenditionsToMake {
+	for index, res := range video.Renditions {
 		scale := fmt.Sprintf("-2:%v", res.name)
 		if video.Orientation == "vertical" {
 			scale = fmt.Sprintf("%v:-2", res.name)
@@ -81,9 +81,6 @@ func buildFilterComplex(video *Video) []string {
 
 func buildVideoMaps(video *Video) []string {
 
-	// TODO adapt to .env or config.yml in case
-	// user wants custom bitrates
-
 	// --- MAP OF BITRATE VALUES ---
 	rates := map[int]struct {
 		avg, max, buf string
@@ -97,17 +94,20 @@ func buildVideoMaps(video *Video) []string {
 
 	mapFlag := "-map"
 	var maps []string
-	for index := range video.RenditionsToMake {
+	for index := range video.Renditions {
 
 		// --- INDEX THE FLAGS AND RETREIVE VALUES FOR REFERENCE RESOLUTION ---
+
+		// Example output:
+		//"-map", "[v1out]", "-c:v:0", "libx264", "-b:v:0", "5000k", "-maxrate:v:0", "5350k", "-bufsize:v:0", "7500k",
 		version := fmt.Sprintf("[v%vout]", (index + 1))
 		codecFlag := fmt.Sprintf("-c:v:%v", index)
 		bitrateFlag := fmt.Sprintf("-b:v:%v", index)
 		maxrateFlag := fmt.Sprintf("-maxrate:v:%v", index)
 		bufsizeFlag := fmt.Sprintf("-bufsize:v:%v", index)
-		bitrate := rates[video.RenditionsToMake[index].value]
 
 		// --- TURN IT ALL INTO A SLICE ---
+		bitrate := rates[video.Renditions[index].value]
 		maps = append(maps,
 			mapFlag, version,
 			codecFlag, "libx264",
@@ -137,21 +137,20 @@ func buildAudioMaps(video *Video) []string {
 
 	mapFlag := "-map"
 	var audioMaps []string
-	for index := range video.RenditionsToMake {
+	for index := range video.Renditions {
 
+		// Example output:
+		// "-map", "a:0", "-c:a:0", "aac", "-b:a:0", "192k",
 		codecFlag := fmt.Sprintf("-c:a:%v", index)
 		bitrateFlag := fmt.Sprintf("-b:a:%v", index)
 		bitrate := rates[video.ReferenceResolution]
 
 		audioMaps = append(audioMaps,
-			mapFlag, "a:0",
+			mapFlag, "a:0", // use only the first audio stream
 			codecFlag, "aac",
 			bitrateFlag, bitrate,
 		)
 	}
-	// "-map", "a:0", "-c:a:0", "AAC", "-b:a:0", "192k",
-	// "-map", "a:0", "-c:a:1", "AAC", "-b:a:1", "129k",
-	// "-map", "a:0", "-c:a:2", "AAC", "-b:a:2", "96k",
 
 	return audioMaps
 }
@@ -160,7 +159,7 @@ func getKeyFramesAndQuality() []string {
 	return []string{
 		"-preset", "slow", // encodes slower but with better quality and compression
 		"-pix_fmt", "yuv420p", // sets yuv420p, which is widely adopted
-		"-force_key_frames", "expr:gte(t, n_forced*1)", // force a keyframe every seconds
+		"-force_key_frames", "expr:gte(t, n_forced*1)", // force a keyframe every second
 		"-sc_threshold", "0", // stops H.264 from automatically adding iframes at scene changes
 		"-g", "9999", // max frames between iframes, std value is 250, this option is just for safety
 	}
@@ -172,16 +171,20 @@ func buildHlsOptions(video *Video) []string {
 	playlistPath := "playlist_%v.m3u8"
 	fmp4InitFilename := "stream_%v/init.mp4"
 
-	versionAmount := len(video.RenditionsToMake)
-
 	var streamMap strings.Builder
-	for index := range versionAmount {
+
+	// Example output:
+	// "v:0,a:0 v:1,a:1 v:2,a:2" or "v:0 v:1 v:2"
+	for index := range video.Renditions {
 		if video.HasAudio {
 			fmt.Fprintf(&streamMap, "v:%v,a:%v ", index, index)
 		} else {
 			fmt.Fprintf(&streamMap, "v:%v ", index)
 		}
 	}
+
+	// most things here are hard coded for now,
+	// but they will be offered as options on next versions of Frevod
 
 	return []string{
 		"-f", "hls", // video format, in our case, either HLS or DASH
@@ -199,6 +202,7 @@ func buildHlsOptions(video *Video) []string {
 	}
 }
 
+// FULL COMMAND EXAMPLE:
 /* args := []string{
 	"-i", video.Source, // input
 
@@ -241,8 +245,7 @@ func buildHlsOptions(video *Video) []string {
 	"-hls_playlist_type", "vod", // self explanatory
 	"-hls_list_size", "0", // std value is 5, used for livestreams, we want all segments in the list so we input 0
 	"-master_pl_name", "master.m3u8",
-	// "-var_stream_map", "v:0,a:0 v:1,a:1 v:2,a:2",
-	"-var_stream_map", "v:0 v:1 v:2",
+	"-var_stream_map", "v:0,a:0 v:1,a:1 v:2,a:2",
 	"-strftime_mkdir", "1",
 	"-hls_segment_filename", segmentPattern, // name and dir for hls segments
 	playlistPath, // name and dir for hls playlist

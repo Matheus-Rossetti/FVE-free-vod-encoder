@@ -16,7 +16,7 @@ var (
 	ErrLocalFileNotVideo   = errors.New("inputed local file isn't a video")
 )
 
-func (d *ingestor) ingestFromLocal(path string) (*os.File, error) {
+func ingestFromLocal(path string) (*os.File, error) {
 
 	absolutePath, err := getAbsolutePath(path)
 	if err != nil {

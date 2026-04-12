@@ -2,76 +2,63 @@ package encoder
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 )
 
 var (
 	ErrPreparingOutputStorage = errors.New("failed preparing output storage")
-	ErrGettingAboslutePath    = errors.New("failed getting the absolute path from file name")
-	ErrCreatingVideoStruct    = errors.New("failed when collecting video data")
 	ErrRunningFFmpegCommand   = errors.New("failed when running FFmpeg command")
 )
 
 func (e *encoder) Start() {
-JobLoop:
 	for job := range e.encodeQueue {
-		e.slog.Info(fmt.Sprintf("Received a job! Encoding contents from %v", job.EncodeJob.File.Name()),
-			"id", e.id)
+		func() { // wrap the loop contents in a function so we can defer returning the file to the file pool
+			e.slog.Info("Received a job!", "encoding", job.UploadJob.KeyStarter) // TOOD change for job.Id when job struct gets refactored
 
-		absoluteVideoPath, err := filepath.Abs(job.EncodeJob.File.Name())
-		if err != nil {
-			e.slog.Error(ErrGettingAboslutePath.Error(), "err", err, "id", e.id)
-			if job.EncodeJob.DownloadedFile {
-				e.filePool <- job.EncodeJob.File
+			defer func() {
+				if job.EncodeJob.DownloadedFile {
+					e.filePool <- job.EncodeJob.File
+				}
+			}()
+
+			videoName := job.EncodeJob.File.Name()
+			absoluteVideoPath, err := filepath.Abs(videoName)
+			if err != nil {
+				e.slog.Error("couldn't get absolute path for video", "video", videoName, "err", err)
+				return
 			}
-			continue JobLoop
-		}
 
-		video, err := e.NewVideo(absoluteVideoPath)
-		if err != nil {
-			e.slog.Error(ErrCreatingVideoStruct.Error(), "err", err)
-			if job.EncodeJob.DownloadedFile {
-				e.filePool <- job.EncodeJob.File
+			metadata, err := GetMetadataFrom(absoluteVideoPath)
+			if err != nil {
+				e.slog.Error("couldn't get metadata from a video", "video", videoName, "err", err)
 			}
-			continue JobLoop
-		}
 
-		cmd := e.BuildFFmpegCommand(video)
+			video := NewVideo(metadata)
+			cmd := e.BuildFFmpegCommand(video, absoluteVideoPath)
 
-		outputDir, err := e.createOutputDir()
-		if err != nil {
-			e.slog.Error(ErrPreparingOutputStorage.Error(), "err", err, "id", e.id)
-			if job.EncodeJob.DownloadedFile {
-				e.filePool <- job.EncodeJob.File
+			outputDir, err := e.createOutputDir()
+			if err != nil {
+				e.slog.Error(ErrPreparingOutputStorage.Error(), "err", err)
+				return
 			}
-			continue JobLoop
-		}
 
-		cmd.Dir = outputDir
-		err = cmd.Run()
-		if err != nil {
-			e.slog.Error(ErrRunningFFmpegCommand.Error(), "err", err, "id", e.id)
-			e.slog.Info(fmt.Sprintf("Deleting %v", outputDir))
-			os.RemoveAll(outputDir)
-			if job.EncodeJob.DownloadedFile {
-				e.filePool <- job.EncodeJob.File
+			cmd.Dir = outputDir
+			err = cmd.Run()
+			if err != nil {
+				e.slog.Error(ErrRunningFFmpegCommand.Error(), "err", err)
+				os.RemoveAll(outputDir)
+				return
 			}
-			continue JobLoop
-		}
 
-		job.UploadJob.FromDir = outputDir
+			job.UploadJob.FromDir = outputDir
 
-		e.slog.Info("Finished!", "id", e.id)
-		e.uploadQueue <- job
-
-		if job.EncodeJob.DownloadedFile {
-			e.filePool <- job.EncodeJob.File
-		}
+			e.slog.Info("Finished encoding!")
+			e.dispatchQueue <- job
+		}()
 	}
 
 	// After queue closes
 	os.RemoveAll("output")
-	e.slog.Info("Shutting down...", "id", e.id)
+	e.slog.Info("Shutting down...")
 }

@@ -1,8 +1,8 @@
 ingest:
   cli:
-    enabled: true
-  rest:
     enabled: false
+  rest:
+    enabled: true
     port: ":1137" # :1137
 
 encode:

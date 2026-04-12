@@ -27,13 +27,13 @@ JobLoop:
 		case core.Path:
 			i.slog.Info("Validating...", "file", job.DownloadJob.VideoUri)
 
-			localFile, err := i.ingestFromLocal(job.DownloadJob.VideoUri)
+			localFile, err := ingestFromLocal(job.DownloadJob.VideoUri)
 			if err != nil {
 				i.slog.Error("skipping job", "why", err)
 				continue JobLoop
 			}
 
-			job.EncodeJob.DownloadedFile = false
+			job.EncodeJob.DownloadedFile = false // using local file
 			job.EncodeJob.File = localFile
 		}
 

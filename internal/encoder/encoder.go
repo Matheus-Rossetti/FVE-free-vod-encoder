@@ -10,14 +10,13 @@ import (
 )
 
 type encoder struct {
-	ctx         context.Context
-	log         *log.Logger
-	slog        *slog.Logger
-	options     *core.Options
-	filePool    chan<- *os.File
-	id          int
-	encodeQueue <-chan *core.Job
-	uploadQueue chan<- *core.Job
+	ctx           context.Context
+	log           *log.Logger
+	slog          *slog.Logger
+	options       *core.Options
+	filePool      chan<- *os.File
+	encodeQueue   <-chan *core.Job
+	dispatchQueue chan<- *core.Job
 }
 
 func NewEncoder(
@@ -26,17 +25,15 @@ func NewEncoder(
 	slog *slog.Logger,
 	options *core.Options,
 	filePool chan<- *os.File,
-	id int,
-	encodeQueue <-chan *core.Job,
-	uploadQueue chan<- *core.Job) *encoder {
+	encodeQueue core.EncodeQueue,
+	dispatchQueue core.DispatchQueue) *encoder {
 	return &encoder{
-		ctx:         ctx,
-		log:         log,
-		slog:        slog,
-		options:     options,
-		filePool:    filePool,
-		id:          id,
-		encodeQueue: encodeQueue,
-		uploadQueue: uploadQueue,
+		ctx:           ctx,
+		log:           log,
+		slog:          slog,
+		options:       options,
+		filePool:      filePool,
+		encodeQueue:   encodeQueue,
+		dispatchQueue: dispatchQueue,
 	}
 }
