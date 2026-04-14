@@ -16,20 +16,17 @@ var (
 	concurrentUploads = 10
 )
 
-// This function is getting messier by de day, refactor or be ashamed.
 func (d *dispatcher) Start() {
 	for job := range d.uploadQueue {
-		d.slog.Info("Received a job! Walking dir", "dir", job.UploadJob.FromDir, "id", d.id)
+		d.slog.Info("Received a job! Walking dir!", "dir", job.UploadJob.FromDir)
 
 		// CREATE UPLOAD POOL
-		uploadPool := make(chan struct{}, concurrentUploads)
-		for range concurrentUploads {
-			uploadPool <- struct{}{}
-		}
+		uploadPool := createUploadPool()
 
 		var wg sync.WaitGroup
 
 		for providerName, provider := range d.storageProviders {
+
 			providerContext, cancel := context.WithCancel(d.ctx)
 
 			var uploadedFiles []string
@@ -98,4 +95,13 @@ func (d *dispatcher) Start() {
 
 	// After queue closes
 	d.slog.Info("Shutting down...", "id", d.id)
+}
+
+func createUploadPool() chan struct{} {
+	uploadPool := make(chan struct{}, concurrentUploads)
+	for range concurrentUploads {
+		uploadPool <- struct{}{}
+	}
+
+	return uploadPool
 }

@@ -5,6 +5,6 @@ import (
 )
 
 type StorageProvider interface {
-	Upload(context.Context, string, string) error
+	Dispatch(context.Context, string, string) error
 	HandleError([]string) error
 }
