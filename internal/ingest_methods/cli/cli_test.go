@@ -134,17 +134,17 @@ func TestStart_Integration(t *testing.T) {
 
 		select {
 		case job := <-ingest:
-			if job.DownloadJob.UriType != core.Url {
-				t.Errorf("UriType: got %v, want Url", job.DownloadJob.UriType)
+			if job.IngestJob.UriType != core.Url {
+				t.Errorf("UriType: got %v, want Url", job.IngestJob.UriType)
 			}
-			if job.DownloadJob.VideoUri != "http://coolvideo.com" {
-				t.Errorf("VideoUri: got %q, want http://coolvideo.com", job.DownloadJob.VideoUri)
+			if job.IngestJob.VideoUri != "http://coolvideo.com" {
+				t.Errorf("VideoUri: got %q, want http://coolvideo.com", job.IngestJob.VideoUri)
 			}
-			if job.UploadJob.KeyStarter != "key/starter" {
-				t.Errorf("KeyStarter: got %q, want key/starter", job.UploadJob.KeyStarter)
+			if job.DispatchJob.KeyStarter != "key/starter" {
+				t.Errorf("KeyStarter: got %q, want key/starter", job.DispatchJob.KeyStarter)
 			}
-			if job.DownloadJob.Source != "cli" {
-				t.Errorf("Source: got %q, want cli", job.DownloadJob.Source)
+			if job.IngestJob.Source != "cli" {
+				t.Errorf("Source: got %q, want cli", job.IngestJob.Source)
 			}
 		case <-time.After(3 * time.Second):
 			t.Fatal("timed out waiting for job on ingest queue")

@@ -14,7 +14,7 @@ var (
 func (e *encoder) Start() {
 	for job := range e.encodeQueue {
 		func() { // wrap the loop contents in a function so we can defer returning the file to the file pool
-			e.slog.Info("Received a job!", "encoding", job.UploadJob.KeyStarter) // TOOD change for job.Id when job struct gets refactored
+			e.slog.Info("Received a job!", "encoding", job.DispatchJob.KeyStarter) // TOOD change for job.Id when job struct gets refactored
 
 			defer func() {
 				if job.EncodeJob.DownloadedFile {
@@ -51,7 +51,7 @@ func (e *encoder) Start() {
 				return
 			}
 
-			job.UploadJob.FromDir = outputDir
+			job.DispatchJob.FromDir = outputDir
 
 			e.slog.Info("Finished encoding!")
 			e.dispatchQueue <- job

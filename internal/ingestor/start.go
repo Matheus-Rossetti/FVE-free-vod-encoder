@@ -7,14 +7,14 @@ import (
 func (i *ingestor) Start() {
 JobLoop:
 	for job := range i.downloadQueue {
-		i.slog.Info("Received a job!", "source", job.DownloadJob.Source)
+		i.slog.Info("Received a job!", "source", job.IngestJob.Source)
 
-		switch job.DownloadJob.UriType {
+		switch job.IngestJob.UriType {
 		case core.Url:
-			i.slog.Info("Downloading...", "from", job.DownloadJob.VideoUri)
+			i.slog.Info("Downloading...", "from", job.IngestJob.VideoUri)
 
 			file := <-i.filePool // file is returned to the pool by the encoder or by an error
-			err := i.ingestFromUrl(file, job.DownloadJob.VideoUri)
+			err := i.ingestFromUrl(file, job.IngestJob.VideoUri)
 			if err != nil {
 				i.filePool <- file
 				i.slog.Error("skipping job", "why", err)
@@ -25,9 +25,9 @@ JobLoop:
 			job.EncodeJob.File = file
 
 		case core.Path:
-			i.slog.Info("Validating...", "file", job.DownloadJob.VideoUri)
+			i.slog.Info("Validating...", "file", job.IngestJob.VideoUri)
 
-			localFile, err := ingestFromLocal(job.DownloadJob.VideoUri)
+			localFile, err := ingestFromLocal(job.IngestJob.VideoUri)
 			if err != nil {
 				i.slog.Error("skipping job", "why", err)
 				continue JobLoop

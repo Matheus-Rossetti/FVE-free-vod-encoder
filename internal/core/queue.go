@@ -22,11 +22,11 @@ func StartQueues(options *Options) (IngestQueue, EncodeQueue, DispatchQueue) {
 func PushJob(uriType URIType, uri, keyStarter string, source string) {
 
 	job := NewJob()
-	job.DownloadJob.Source = source
-	job.DownloadJob.UriType = uriType
-	job.DownloadJob.VideoUri = uri
+	job.IngestJob.Source = source
+	job.IngestJob.UriType = uriType
+	job.IngestJob.VideoUri = uri
 
-	job.UploadJob.KeyStarter = keyStarter
+	job.DispatchJob.KeyStarter = keyStarter
 
 	ingestQueue <- job
 }

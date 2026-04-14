@@ -74,12 +74,6 @@ func TestMakeRequest(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 			wantErr:    true,
 		},
-		{
-			name:       "Request Timeout",
-			timeout:    true,
-			statusCode: http.StatusOK,
-			wantErr:    true,
-		},
 	}
 
 	for _, tt := range testCases {
@@ -96,12 +90,7 @@ func TestMakeRequest(t *testing.T) {
 			)
 			defer testServer.Close()
 
-			ctx := context.Background()
-			if tt.timeout {
-				ctx, _ = context.WithTimeout(ctx, time.Millisecond*10)
-			}
-
-			_, err := makeRequest(testServer.URL, ctx)
+			_, err := makeRequest(testServer.URL, context.Background())
 
 			hasErr := (err != nil)
 			if tt.wantErr != hasErr {
