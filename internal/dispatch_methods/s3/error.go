@@ -14,7 +14,7 @@ var ErrRemovingObj = errors.New("Failed to remove and object from S3")
 
 func (s *S3) HandleError(uploadedFiles []string) error {
 
-	s.slog.Warn("Oops.. Starting cleanup...")
+	time.Sleep(time.Second * 3)
 
 	if len(uploadedFiles) < 1 {
 		s.slog.Warn("Nothing to clean, no files were uploaded!")

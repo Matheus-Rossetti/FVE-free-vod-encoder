@@ -2,9 +2,13 @@ package dispatcher
 
 import (
 	"context"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
 type StorageProvider interface {
-	Dispatch(context.Context, string, string) error
-	HandleError([]string) error
+	Name() string
+
+	Dispatch(context.Context, core.DispatchJob) error
+	HandleError(core.DispatchJob) error
 }

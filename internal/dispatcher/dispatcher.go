@@ -13,9 +13,8 @@ type dispatcher struct {
 	log              *log.Logger
 	slog             *slog.Logger
 	options          *core.Options
-	id               int
-	uploadQueue      <-chan *core.Job
-	storageProviders map[string]StorageProvider
+	dispatchQueue    core.DispatchQueue
+	storageProviders []StorageProvider
 }
 
 func NewDispatcher(
@@ -23,17 +22,15 @@ func NewDispatcher(
 	log *log.Logger,
 	slog *slog.Logger,
 	options *core.Options,
-	id int,
-	uploadQueue <-chan *core.Job,
-	storageProviders map[string]StorageProvider,
+	dispatchQueue core.DispatchQueue,
+	storageProviders []StorageProvider,
 ) *dispatcher {
 	return &dispatcher{
 		ctx:              ctx,
 		log:              log,
 		slog:             slog,
 		options:          options,
-		id:               id,
-		uploadQueue:      uploadQueue,
+		dispatchQueue:    dispatchQueue,
 		storageProviders: storageProviders,
 	}
 }

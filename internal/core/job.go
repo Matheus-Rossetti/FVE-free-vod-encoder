@@ -3,20 +3,20 @@ package core
 import "os"
 
 type Job struct {
-	DownloadJob DownloadJob
+	IngestJob   IngestJob
 	EncodeJob   EncodeJob
-	UploadJob   UploadJob
+	DispatchJob DispatchJob
 }
 
 func NewJob() *Job {
 	return &Job{
-		DownloadJob: DownloadJob{},
+		IngestJob:   IngestJob{},
 		EncodeJob:   EncodeJob{},
-		UploadJob:   UploadJob{},
+		DispatchJob: DispatchJob{},
 	}
 }
 
-type DownloadJob struct {
+type IngestJob struct {
 	VideoUri     string
 	UriType      URIType
 	Source       string
@@ -29,7 +29,7 @@ type EncodeJob struct {
 	DownloadedFile    bool
 }
 
-type UploadJob struct {
+type DispatchJob struct {
 	FromDir    string
 	KeyStarter string
 }

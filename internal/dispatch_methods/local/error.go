@@ -1,21 +1,17 @@
 package local
 
 import (
-	"errors"
-	"fmt"
+	"context"
 	"os"
+
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-var ErrDeletingFile = errors.New("failed when deleting file")
+func (l *local) HandleError(ctx context.Context, job core.DispatchJob) error {
 
-func (l *local) HandleError(files []string) error {
-
-	for _, file := range files {
-		err := os.Remove(file)
-		if err != nil {
-			l.slog.Error(ErrDeletingFile.Error(), "file", file)
-			return fmt.Errorf("%w: %v", ErrDeletingFile, err)
-		}
+	err := os.RemoveAll(job.FromDir)
+	if err != nil {
+		l.slog.Error("error deleting a dir after dispatch", "err", err)
 	}
 
 	return nil
