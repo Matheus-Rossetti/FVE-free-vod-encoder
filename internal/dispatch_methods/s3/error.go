@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Matheus-Rossetti/frevod/internal/core"
 	"github.com/minio/minio-go/v7"
 )
 
 var ErrRemovingObj = errors.New("Failed to remove and object from S3")
 
-func (s *S3) HandleError(uploadedFiles []string) error {
+func (s *S3) HandleError(job core.DispatchJob) error {
 
 	time.Sleep(time.Second * 3)
 

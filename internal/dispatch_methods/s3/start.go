@@ -47,3 +47,7 @@ func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
 		Client: client,
 	}
 }
+
+func (s *S3) Name() string {
+	return "S3"
+}

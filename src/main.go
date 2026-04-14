@@ -55,23 +55,25 @@ func main() {
 	})
 
 	// START OUTPUT METHODS
-	storageProviders := make(map[string]dispatcher.StorageProvider) // we pass storageProviders to dispatcher
-	if options.Dispatch.Local.Enabled {
-		log, slog := logger.Local()
-		provider := local.Start(log, slog, options)
-		storageProviders["local"] = provider
-	}
+	var storageProviders []dispatcher.StorageProvider // we pass storageProviders to dispatcher
 	if options.Dispatch.S3.Enabled {
 		log, slog := logger.S3()
 		provider := s3.Start(log, slog, options)
-		storageProviders["s3"] = provider
+		storageProviders = append(storageProviders, provider)
+	}
+
+	// local should be added last, since it renames the output dir.
+	if options.Dispatch.Local.Enabled {
+		log, slog := logger.Local()
+		provider := local.Start(log, slog, options)
+		storageProviders = append(storageProviders, provider)
 	}
 
 	//-------------------------------------------
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Dispatcher(index)
-			uploader := dispatcher.NewDispatcher(ctx, log, slog, options, index, dispatchQueue, storageProviders)
+			uploader := dispatcher.NewDispatcher(ctx, log, slog, options, dispatchQueue, storageProviders)
 			uploader.Start()
 		})
 	}

@@ -17,7 +17,7 @@ var (
 	ErrUploadingFileToS3 = errors.New("failed when uploading a file to S3")
 )
 
-func (s *S3) Upload(ctx context.Context, job core.DispatchJob) error {
+func (s *S3) Dispatch(ctx context.Context, job core.DispatchJob) error {
 
 	uploadPool := make(chan struct{}, 10)
 

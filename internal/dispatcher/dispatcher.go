@@ -8,6 +8,9 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
+// different storage providers need different
+type dispatchError map[string]any
+
 type dispatcher struct {
 	ctx              context.Context
 	log              *log.Logger

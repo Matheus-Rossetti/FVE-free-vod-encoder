@@ -1,15 +1,12 @@
 package local
 
 import (
-	"context"
 	"os"
-
-	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func (l *local) HandleError(ctx context.Context, job core.DispatchJob) error {
+func (l *local) HandleError(dir string) error {
 
-	err := os.RemoveAll(job.FromDir)
+	err := os.RemoveAll(dir)
 	if err != nil {
 		l.slog.Error("error deleting a dir after dispatch", "err", err)
 	}

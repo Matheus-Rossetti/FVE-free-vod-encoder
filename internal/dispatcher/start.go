@@ -13,9 +13,7 @@ func (d *dispatcher) Start() {
 
 			err := provider.Dispatch(d.ctx, job.DispatchJob)
 			if err != nil {
-				d.slog.Error("dispatch failed", "provider", provider.Name(), "err", err)
-				d.slog.Warn("Starting cleanup...", "at", provider.Name())
-				provider.HandleError(job.DispatchJob)
+				d.slog.Error("dispatch failed, starting cleanup...", "provider", provider.Name(), "err", err)
 			}
 
 			d.slog.Info("Finished dispatching!", "to", provider.Name())

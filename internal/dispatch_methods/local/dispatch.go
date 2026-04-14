@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -10,7 +11,7 @@ import (
 	"github.com/Matheus-Rossetti/frevod/internal/core"
 )
 
-func (l *local) Dispatch(job core.DispatchJob) error {
+func (l *local) Dispatch(ctx context.Context, job core.DispatchJob) error {
 
 	newDirName := path.Join(l.storageDir, job.KeyStarter)
 	counter := 1
@@ -27,6 +28,7 @@ func (l *local) Dispatch(job core.DispatchJob) error {
 
 	err := os.Rename(job.FromDir, newDirName)
 	if err != nil {
+		l.HandleError(job.FromDir) // TODO fall back to creating a new dir and copying the files
 		return fmt.Errorf("failed to rename dir from %v to %v | %v", job.FromDir, newDirName, err)
 	}
 

@@ -1,4 +1,4 @@
-package dispatcher
+package s3
 
 import (
 	"path/filepath"
@@ -6,9 +6,10 @@ import (
 
 func getKey(keyStarter, basePath, targPath string) string {
 
+	// I had a hard time with .Rel, so here's an explanation:
 	// basePath = output/video-1234/
-	// targPath = output/video-1234/manifest.mp4 || output/video-1234/p480/segment01.ts
-	// relativePath = manifest.mp4 || p480/segment01.ts
+	// targPath = output/video-1234/manifest.mp4 or output/video-1234/p480/segment01.ts
+	// relativePath = manifest.mp4 or p480/segment01.ts
 	relativePath, _ := filepath.Rel(basePath, targPath)
 
 	dir := filepath.Dir(relativePath)
