@@ -56,7 +56,7 @@ type S3Options struct {
 	AccessKey       string `yaml:"access_key" validate:"required_if=Enabled true"`
 	SecretAccessKey string `yaml:"secret_key" validate:"required_if=Enabled true"`
 	Bucket          string `yaml:"bucket"     validate:"required_if=Enabled true"`
-	UseSSL          bool   `yaml:"ssl"        validate:"required_if=Enabled true"`
+	UseSSL          bool   `yaml:"use_ssl"        validate:"required_if=Enabled true"`
 }
 
 type AzureBlobStorageOptions struct {

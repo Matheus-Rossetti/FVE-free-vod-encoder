@@ -2,6 +2,7 @@ package s3
 
 import (
 	"path/filepath"
+	"strings"
 )
 
 func getKey(keyStarter, basePath, targPath string) string {
@@ -16,11 +17,14 @@ func getKey(keyStarter, basePath, targPath string) string {
 	filename := filepath.Base(relativePath)
 
 	var key string
-	if dir != "." { // dir is "." if path is only the filename
+	if dir != "." { // dir is "." if path is only filename
 		key = filepath.Join(keyStarter, dir, filename)
 	} else {
 		key = filepath.Join(keyStarter, filename)
 	}
+
+	// keys built on windows comes with back slashes '\' but S3 uses forward slashes '/'
+	key = strings.ReplaceAll(key, `\`, `/`)
 
 	return key
 }

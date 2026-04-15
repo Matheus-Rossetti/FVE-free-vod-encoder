@@ -17,17 +17,3 @@ func StartFrevod(log *log.Logger, slog *slog.Logger) *frevod {
 		Slog: slog,
 	}
 }
-
-// func (f *frevod) SetOptions(options *Options) {
-
-// 	options.Input.REST = true
-// 	options.Input.Cli = true
-// 	options.Encode.ConcurrentEncodings = 2
-// 	options.Upload.Local.Use = true
-// 	options.Upload.Local.StoreAt = `C:\Users\mathe\OneDrive\Desktop\segmented videos`
-
-// 	// set
-// 	f.Options = options
-
-// 	f.Slog.Info(fmt.Sprintf("Using options %+v", options))
-// }

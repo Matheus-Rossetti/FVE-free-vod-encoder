@@ -13,8 +13,8 @@ import (
 type S3 struct {
 	log    *log.Logger
 	slog   *slog.Logger
-	Bucket string
-	Client *minio.Client
+	bucket string
+	client *minio.Client
 }
 
 func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
@@ -43,8 +43,8 @@ func Start(log *log.Logger, slog *slog.Logger, options *core.Options) *S3 {
 	return &S3{
 		log:    log,
 		slog:   slog,
-		Bucket: bucket,
-		Client: client,
+		bucket: bucket,
+		client: client,
 	}
 }
 
