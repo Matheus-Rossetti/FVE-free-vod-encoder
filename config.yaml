@@ -11,14 +11,14 @@ encode:
   
 dispatch:
   s3:
-    enabled: true
+    enabled: false
     bucket: 
     endpoint: 
     access_key: 
     secret_key: 
     use_ssl: true
   local:
-    enabled: false
+    enabled: true
     store_at:
 
 

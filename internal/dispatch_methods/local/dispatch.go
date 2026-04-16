@@ -13,17 +13,22 @@ import (
 
 func (l *local) Dispatch(ctx context.Context, job core.DispatchJob) error {
 
-	newDirName := path.Join(l.storageDir, job.KeyStarter)
-	counter := 1
+	baseDirName := path.Join(l.storageDir, job.KeyStarter)
+
+	counter := 0
+	newDirName := baseDirName
 
 	for { // if dir already exists, we add {counter} to the name
 		_, err := os.Stat(newDirName)
 		if errors.Is(err, fs.ErrNotExist) {
-			l.slog.Warn("This dir already exists!", "dir", job.FromDir, "Trying as", newDirName)
 			break
-		} else {
-			newDirName = fmt.Sprintf("%s%d", newDirName, counter)
 		}
+
+		oldName := newDirName
+		counter++
+
+		newDirName = fmt.Sprintf("%s%d", baseDirName, counter)
+		l.slog.Warn("This dir already exists!", "dir", oldName, "trying as", newDirName)
 	}
 
 	err := os.Rename(job.FromDir, newDirName)

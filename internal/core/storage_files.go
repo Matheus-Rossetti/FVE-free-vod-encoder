@@ -39,6 +39,5 @@ func (f *frevod) CloseAndDeleteStorageFiles(filePool <-chan *os.File) {
 		file.Close()
 		absoluteFilePath, _ := filepath.Abs(file.Name())
 		os.Remove(absoluteFilePath)
-		f.Slog.Warn("Closed and Deleted", "file", file.Name())
 	}
 }
