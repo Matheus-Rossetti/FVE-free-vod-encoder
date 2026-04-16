@@ -100,7 +100,7 @@ _Notice how you can get an input from the web or from local storage no matter wh
 ``` yaml
 services:
   frevod:
-    # image: frevod:v0.1-alpha 
+    image: frevod:0.1.0 
     container_name: frevod-worker
     ports:
       - "1137:1137"
@@ -122,7 +122,7 @@ services:
 
 _You **can** use the CLI input method with Docker too, but... Are you sure you wanna do it this way?_ 🤨
 
-### For local usage, check the [releases](https://github.com/Matheus-Rossetti/frevod/releases) page so you can download Frevod for your OS.
+## For local usage, check the [releases](https://github.com/Matheus-Rossetti/frevod/releases) page so you can download Frevod for your OS.
 ### Here's a config.yaml example:
 ``` yaml
 ingest:
