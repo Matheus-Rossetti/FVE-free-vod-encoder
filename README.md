@@ -122,7 +122,7 @@ services:
 
 _You **can** use the CLI input method with Docker too, but... Are you sure you wanna do it this way?_ 🤨
 
-### For local usage, check the [releases]() page so you can download Frevod for your OS.
+### For local usage, check the [releases](https://github.com/Matheus-Rossetti/frevod/releases) page so you can download Frevod for your OS.
 ### Here's a config.yaml example:
 ``` yaml
 ingest:

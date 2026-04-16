@@ -63,7 +63,10 @@ func TestCheckExistence(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 
-			_, err := checkExistence(tt.path)
+			file, err := checkExistence(tt.path)
+			if file != nil {
+				file.Close()
+			}
 
 			hasErr := (err != nil)
 			if tt.wantErr != hasErr {
