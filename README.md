@@ -180,4 +180,4 @@ Frevod stands for "Free Encoder for Video on Demand", quite simplistic, I know.
 ### What's up with the logo?
 I tried making something more common to this infra tool / cloud market, but man... let's just say it didn't come out right.. So I decided to make something different that breaks expectation. I've been playing Hades the last couple days so I based the logo on the game's art style. _Even considered calling 'features' -> 'boons' at some point, lol_.
 
-Need help? Have any more questions? Join me on [Discord](https://discord.com/users/291720914486427648)
+Need help? Have any more questions? Join the [Discord server](discord.gg/uVCpJTK6Dj)!
