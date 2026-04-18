@@ -20,7 +20,7 @@ Frevod uses a pipeline pattern for its internal architecture, it is composed of 
 - Ingest Methods -> Ingestor -> Encoder -> Dispatcher -> Dispatch Methods.
 ### Visual Representation: 
 <img width="1616" height="366" alt="Untitled-2026-03-30-1908" src="https://github.com/user-attachments/assets/d6463181-afc2-4b38-bf4b-948fea9ccfca" />
-The Ingestor, Encoder and Dispatcher each listen to it own queue, those being `ingestQueue`, `encodeQueue` and `dispatchQueue`.
+The Ingestor, Encoder and Dispatcher each listen to its own queue, those being `ingestQueue`, `encodeQueue` and `dispatchQueue`.
 
 ## Code
 ### Ingest and Dispatch Methods
