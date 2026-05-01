@@ -1,8 +1,4 @@
-/video-test/*
-/HLS/*
-/output/*
-/downloaded-videos/*
-/download-slots/*
 docker-compose.yml
 config.yaml
+/output/*
 /storage_files/*
