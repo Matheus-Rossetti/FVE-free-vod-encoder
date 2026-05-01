@@ -45,7 +45,7 @@ func main() {
 
 	wg.Go(func() {
 		// The order in which the queues are closed is important
-		// If we close the encoder when downloader is pushing a
+		// If we close the encoder when ingestor is pushing a
 		// job to it, the push will fail and leave orphan files.
 		<-ctx.Done()
 		frevod.Slog.Warn("Shutdown signal received!")
@@ -54,7 +54,7 @@ func main() {
 		close(dispatchQueue)
 	})
 
-	// START OUTPUT METHODS
+	// START DISPATCH METHODS
 	var storageProviders []dispatcher.StorageProvider // we pass storageProviders to dispatcher
 	if options.Dispatch.S3.Enabled {
 		log, slog := logger.S3()
@@ -62,22 +62,23 @@ func main() {
 		storageProviders = append(storageProviders, provider)
 	}
 
-	// local should be added last, since it renames the output dir.
+	// local is added last because it renames the output dir.
 	if options.Dispatch.Local.Enabled {
 		log, slog := logger.Local()
 		provider := local.Start(log, slog, options)
 		storageProviders = append(storageProviders, provider)
 	}
 
-	//-------------------------------------------
+	// DISPATCHER
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Dispatcher(index)
-			uploader := dispatcher.NewDispatcher(ctx, log, slog, options, dispatchQueue, storageProviders)
-			uploader.Start()
+			dispatcher := dispatcher.NewDispatcher(ctx, log, slog, options, dispatchQueue, storageProviders)
+			dispatcher.Start()
 		})
 	}
 
+	// ENCODER
 	for index := range options.Encode.ConcurrentEncodings {
 		wg.Go(func() {
 			log, slog := logger.Encoder(index)
@@ -86,16 +87,17 @@ func main() {
 		})
 	}
 
+	// INGESTOR
 	for index := range options.Encode.ConcurrentEncodings * 2 {
 		wg.Go(func() {
 			log, slog := logger.Ingestor(index)
-			downloader := ingestor.NewIngestor(ctx, log, slog, options, filePool, index, ingestQueue, encodeQueue)
-			downloader.Start()
+			ingestor := ingestor.NewIngestor(ctx, log, slog, options, filePool, index, ingestQueue, encodeQueue)
+			ingestor.Start()
 		})
 
 	}
 
-	// START INPUT METHODS
+	// START INGEST METHODS
 	if options.Ingest.Cli.Enabled {
 		log, slog := logger.Cli()
 		wg.Go(func() {
@@ -103,6 +105,7 @@ func main() {
 			cli.Start()
 		})
 	}
+
 	if options.Ingest.REST.Enabled {
 		log, slog := logger.Rest()
 		wg.Go(func() {

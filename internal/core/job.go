@@ -16,6 +16,18 @@ func NewJob() *Job {
 	}
 }
 
+func PushJob(uriType URIType, uri, keyStarter string, source string) {
+
+	job := NewJob()
+	job.IngestJob.Source = source
+	job.IngestJob.UriType = uriType
+	job.IngestJob.VideoUri = uri
+
+	job.DispatchJob.KeyStarter = keyStarter
+
+	ingestQueue <- job
+}
+
 type IngestJob struct {
 	VideoUri     string
 	UriType      URIType

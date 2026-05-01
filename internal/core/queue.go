@@ -18,15 +18,3 @@ func StartQueues(options *Options) (IngestQueue, EncodeQueue, DispatchQueue) {
 
 	return ingestQueue, encodeQueue, dispatchQueue
 }
-
-func PushJob(uriType URIType, uri, keyStarter string, source string) {
-
-	job := NewJob()
-	job.IngestJob.Source = source
-	job.IngestJob.UriType = uriType
-	job.IngestJob.VideoUri = uri
-
-	job.DispatchJob.KeyStarter = keyStarter
-
-	ingestQueue <- job
-}
