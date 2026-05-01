@@ -39,7 +39,7 @@ func (e *encoder) BuildFFmpegCommand(video *Video, path string) *exec.Cmd {
 		fmt.Println("\n", strings.Join(ffmpegArgs, " "))
 	}
 
-	// Returns a command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute.
+	// Returns a *command that starts FFmpeg as a low-priority process, allowing it to use 100% of > SPARE < compute.
 	cmd := e.BuildForLowPrioExecution(ffmpegArgs)
 
 	return cmd

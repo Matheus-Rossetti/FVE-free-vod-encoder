@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	// WELLCOME TO THE FREVOD SOURCE CODE!
+	// WELCOME TO THE FREVOD SOURCE CODE!
 
 	frevod := core.StartFrevod(logger.Frevod())
 	frevod.CheckForFFmpegBin()
